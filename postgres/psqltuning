@@ -3,7 +3,6 @@
 #Author	: Renier Rousseau ;Potlaki Moloi ;Bob Jolliffe
 #Created Date 	: 29 August 2017
 
-
 usage() {
   echo "Usage: $PROG [options]"
   echo " -n     Number of connections to the database - Mandatory"
