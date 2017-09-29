@@ -68,6 +68,21 @@ CREATE TABLE public.db_connection(
 ALTER TABLE public.db_connection OWNER TO postgres;
 -- ddl-end --
 
+-- object: public.database_connections | type: VIEW --
+-- DROP VIEW IF EXISTS public.database_connections CASCADE;
+CREATE VIEW public.database_connections
+AS 
+
+SELECT
+   public.hosts.host_name AS "Server Name",
+   public.hosts.ip_internal AS "IP Address",
+   public.db.db_name AS "Database Name",
+   public.db_connection.db_connection_username AS "Username",
+   public.db_connection.db_connection_password AS "Password";
+-- ddl-end --
+ALTER VIEW public.database_connections OWNER TO postgres;
+-- ddl-end --
+
 -- object: fk_db_server_hosts_pk | type: CONSTRAINT --
 -- ALTER TABLE public.db_server DROP CONSTRAINT IF EXISTS fk_db_server_hosts_pk CASCADE;
 ALTER TABLE public.db_server ADD CONSTRAINT fk_db_server_hosts_pk FOREIGN KEY (fk_hosts_pk)
