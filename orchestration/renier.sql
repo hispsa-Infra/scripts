@@ -17,6 +17,7 @@
 -- object: public.hosts | type: TABLE --
 -- DROP TABLE IF EXISTS public.hosts CASCADE;
 CREATE TABLE public.hosts(
+	hosts_pk serial NOT NULL,
 	host_name varchar(255) NOT NULL,
 	ip_external varchar(15),
 	ip_internal varchar(15),
