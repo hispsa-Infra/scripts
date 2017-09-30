@@ -49,10 +49,8 @@ done
 shift $(( $OPTIND-1 ))
 
 
-#specify the user you want to create they need to have folders named the same
-# as the user names with their authorized_keys files
-infra_users=(jason renier evert potlaki thato)
-
+#The users will be added according to the folders in the Directory specified
+infra_users=($(ssh $ssh_user@$ssh_host "ls $ssh_directory"))
 
 
 #Move thoguht the arry of users and creates them and copies the keys.
@@ -70,10 +68,12 @@ for str_infra_user in "${infra_users[@]}"; do
 
   #get the key from a remote host and add it too the users authorized_keys file
   sudo mkdir /home/$str_infra_user/.ssh
-  cp /home/hisp/sshkeys/$str_infra_user/authorized_keys /tmp/.authorized_keys
+  scp $ssh_user@$ssh_host:$ssh_directory/$str_infra_user/authorized_keys /tmp/.authorized_keys
   sudo mv /tmp/.authorized_keys /home/$str_infra_user/.ssh/authorized_keys
 
   #Changing the owner ship
   sudo chown -R $str_infra_user:$str_infra_user /home/$str_infra_user/.ssh/*
   sudo chown -R $str_infra_user:$str_infra_user /home/$str_infra_user/.ssh/
+
+  echo "User - $str_infra_user - has been added"
 done
