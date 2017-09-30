@@ -1,0 +1,79 @@
+#!/bin/bash
+#_   _ _____ ___________   _____  ___
+#| | | |_   _/  ___| ___ \ /  ___|/ _ \
+#| |_| | | | \ `--.| |_/ / \ `--./ /_\ \
+#|  _  | | |  `--. \  __/   `--. \  _  |
+#| | | |_| |_/\__/ / |     /\__/ / | | |
+#\_| |_/\___/\____/\_|     \____/\_| |_/
+#Creating Users with Key's injected
+#Author	: Renier Rousseau
+#Created Date 	: 30 September 2017
+usage() {
+  echo "Usage: $PROG [options]"
+  echo " -h     Print this message"
+  echo " -u     User at remote Host for SSH Key (Default - current User i.e. $USER)"
+  echo " -r     Remote Host for SSH Key (Default - localhost)"
+  echo " -d     Directory for SSH keys (Default - current Directory i.e. $PWD)"
+}
+
+ssh_user=$(echo $USER)
+ssh_host=localhost
+ssh_directory=$(echo $PWD)
+
+while getopts ":h:u:r:d:" opt;
+do
+  case $opt in
+    h)
+      usage;
+      exit;
+      ;;
+    u)
+      ssh_user=$OPTARG;
+      ;;
+    r)
+      ssh_host=$OPTARG;
+    ;;
+    d)
+      ssh_directory=$OPTARG;
+    ;;
+    /?)
+      usage >&2
+      exit 1;
+      ;;
+    :)
+      usage >&2
+      exit 1
+  esac
+done
+
+shift $(( $OPTIND-1 ))
+
+
+#specify the user you want to create they need to have folders named the same
+# as the user names with their authorized_keys files
+infra_users=(jason renier evert potlaki thato)
+
+
+
+#Move thoguht the arry of users and creates them and copies the keys.
+for str_infra_user in "${infra_users[@]}"; do
+  #for each user listed in the infra_users array
+  #TODO fist test if those users have been created
+  #Create user
+  sudo useradd -m -G sudo -s /bin/bash $str_infra_user
+  #Create a random password of 20 char and put it in a txt file in their home
+  # folder - this is so they can change it once they have logged in with thier
+  # SSH Key
+  echo $(</dev/urandom tr -dc A-Za-z0-9 | head -c 20) > ~/passwd.txt
+  sudo mv ~/passwd.txt /home/$str_infra_user/passwd.txt
+  echo "$str_infra_user:$(cat /home/$str_infra_user/passwd.txt)" | sudo chpasswd $str_infra_user
+
+  #get the key from a remote host and add it too the users authorized_keys file
+  sudo mkdir /home/$str_infra_user/.ssh
+  cp /home/hisp/sshkeys/$str_infra_user/authorized_keys /tmp/.authorized_keys
+  sudo mv /tmp/.authorized_keys /home/$str_infra_user/.ssh/authorized_keys
+
+  #Changing the owner ship
+  sudo chown -R $str_infra_user:$str_infra_user /home/$str_infra_user/.ssh/*
+  sudo chown -R $str_infra_user:$str_infra_user /home/$str_infra_user/.ssh/
+done
