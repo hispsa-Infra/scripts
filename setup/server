@@ -21,18 +21,18 @@ verbose_flag=0
 usage() {
   echo "Usage: $PROG [options]"
   echo "Ommit options to just to do the basic setup"
-  echo " -w     Make a webserver"
-  echo " -d     Make a database server"
-  echo " -s     Make a storage server"
-  echo " -h     Print this message"
+  echo " -w     Setup a webserver"
+  echo " -d     Setup a database server"
+  echo " -s     Setup a storage server"
   echo " -v     Output to screen (Default is to send to log -> setup.log)"
+  echo " -h     Print this message"
 }
 
 ssh_user=$(echo $USER)
 ssh_host=localhost
 ssh_directory=$(echo $PWD)
 
-while getopts ":h:w:d:s:v" opt;
+while getopts ":h :w :d :s :v" opt;
 do
   case $opt in
     h)
@@ -43,7 +43,7 @@ do
       webserver_flag=1
       ;;
     d)
-      set dbserver_flag=1
+      dbserver_flag=1
       ;;
     s)
       storage_flag=1
