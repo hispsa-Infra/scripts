@@ -11,22 +11,27 @@
 
 
 #Variables
+logfile=setup.log
 #Flags
 webserver_flag=0
 dbserver_flag=0
 storage_flag=0
-verbose_flag=0
 
-#Parameters input
+#functions
+#Parameters input - usage
 usage() {
   echo "Usage: $PROG [options]"
   echo "Ommit options to just to do the basic setup"
   echo " -w     Setup a webserver"
   echo " -d     Setup a database server"
   echo " -s     Setup a storage server"
-  echo " -v     Output to screen (Default is to send to log -> setup.log)"
   echo " -h     Print this message"
 }
+#timestamp
+timestamp(){
+  date | tee -a $logfile
+}
+
 
 ssh_user=$(echo $USER)
 ssh_host=localhost
@@ -47,9 +52,6 @@ do
       ;;
     s)
       storage_flag=1
-      ;;
-    v)
-      verbose_flag=1
       ;;
     /?)
       usage >&2
@@ -81,23 +83,27 @@ if [[ $storage_flag = 1 ]]; then
 elif [[ $storage_flag = 0 ]]; then
   echo "storage_flag is Off"
 fi
-#Testing verbose_flag
-if [[ $verbose_flag = 1 ]]; then
-  echo "verbose_flag is On"
-elif [[ $verbose_flag = 0 ]]; then
-  echo "verbose_flag is Off"
-fi
 
-#TODO remove
-exit
-
-
+#Userfeedback - initial
+clear
+echo "******************************************"
+echo "** Welcome to the HISP SA server setup. **"
+echo "******************************************"
+#into the log
+echo "Server setup started" >> $logfile
+timestamp
+echo "Flags have been set as following" | tee -a $logfile
+echo "verbose_flag = $verbose_flag" | tee -a $logfile
+echo "storage_flag = $storage_flag" | tee -a $logfile
+echo "dbserver_flag = $dbserver_flag" | tee -a $logfile
+echo "webserver_flag = $webserver_flag" | tee -a $logfile
 #Downloading files required for the setup
 
-
 #install supporting software
-sudo apt update
-sudo apt upgrade
+echo "sudo apt update"
+sudo apt update >> $logfile
+
+echo "sudo apt upgrade"
 
 #setting up the network
 ifconfig eth0 | grep "inet addr" | awk '{print $2}' | awk -F '.' '{print $4}'
