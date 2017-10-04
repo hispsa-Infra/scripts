@@ -5,6 +5,99 @@
 #|  _  | | |  `--. \  __/   `--. \  _  |
 #| | | |_| |_/\__/ / |     /\__/ / | | |
 #\_| |_/\___/\____/\_|     \____/\_| |_/
-#Creating Users with Key's injected
+#Setting up a server, allows for switches to change the type of server deployed.
 #Author	: Renier Rousseau
-#Created Date 	: 30 September 2017
+#Created Date 	: 2 October 2017
+
+
+#Variables
+#Flags
+webserver_flag=0
+dbserver_flag=0
+storage_flag=0
+verbose_flag=0
+
+#Parameters input
+usage() {
+  echo "Usage: $PROG [options]"
+  echo "Ommit options to just to do the basic setup"
+  echo " -w     Make a webserver"
+  echo " -d     Make a database server"
+  echo " -s     Make a storage server"
+  echo " -h     Print this message"
+  echo " -v     Output to screen (Default is to send to log -> setup.log)"
+}
+
+ssh_user=$(echo $USER)
+ssh_host=localhost
+ssh_directory=$(echo $PWD)
+
+while getopts ":h:w:d:s:v" opt;
+do
+  case $opt in
+    h)
+      usage;
+      exit;
+      ;;
+    w)
+      webserver_flag=1
+      ;;
+    d)
+      set dbserver_flag=1
+      ;;
+    s)
+      storage_flag=1
+      ;;
+    v)
+      verbose_flag=1
+      ;;
+    /?)
+      usage >&2
+      exit 1;
+      ;;
+    :)
+      usage >&2
+      exit 1
+  esac
+done
+
+shift $(( $OPTIND-1 ))
+
+#Testing webserver_flag
+if [[ $webserver_flag = 1 ]]; then
+  echo "webserver_flag is On"
+elif [[ $webserver_flag = 0 ]]; then
+  echo "webserver_flag is Off"
+fi
+#Testing dbserver_flag
+if [[ $dbserver_flag = 1 ]]; then
+  echo "dbserver_flag is On"
+elif [[ $dbserver_flag = 0 ]]; then
+  echo "dbserver_flag is Off"
+fi
+#Testing storage_flag
+if [[ $storage_flag = 1 ]]; then
+  echo "storage_flag is On"
+elif [[ $storage_flag = 0 ]]; then
+  echo "storage_flag is Off"
+fi
+#Testing verbose_flag
+if [[ $verbose_flag = 1 ]]; then
+  echo "verbose_flag is On"
+elif [[ $verbose_flag = 0 ]]; then
+  echo "verbose_flag is Off"
+fi
+
+#TODO remove
+exit
+
+
+#Downloading files required for the setup
+
+
+#install supporting software
+sudo apt update
+sudo apt upgrade
+
+#setting up the network
+ifconfig eth0 | grep "inet addr" | awk '{print $2}' | awk -F '.' '{print $4}'

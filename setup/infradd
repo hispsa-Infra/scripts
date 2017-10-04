@@ -23,10 +23,6 @@ ssh_directory=$(echo $PWD)
 while getopts ":h:u:r:d:" opt;
 do
   case $opt in
-    h)
-      usage;
-      exit;
-      ;;
     u)
       ssh_user=$OPTARG;
       ;;
@@ -36,6 +32,10 @@ do
     d)
       ssh_directory=$OPTARG;
     ;;
+    h)
+      usage;
+      exit;
+      ;;
     /?)
       usage >&2
       exit 1;
