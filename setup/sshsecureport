@@ -1,0 +1,23 @@
+#!/bin/bash
+#_   _ _____ ___________   _____  ___
+#| | | |_   _/  ___| ___ \ /  ___|/ _ \
+#| |_| | | | \ `--.| |_/ / \ `--./ /_\ \
+#|  _  | | |  `--. \  __/   `--. \  _  |
+#| | | |_| |_/\__/ / |     /\__/ / | | |
+#\_| |_/\___/\____/\_|     \____/\_| |_/
+#Setting up a server, allows for switches to change the type of server deployed.
+#Author	: Renier Rousseau
+#Created Date 	: October 2017
+#Generate Backup
+sudo touch /etc/ssh/sshd_config.bak
+sudo sh -c 'cat /etc/ssh/sshd_config > /etc/ssh/sshd_config.bak'
+
+#Varriables
+port_no=$1
+
+#Port Change
+sudo sed -i "s/Port 22/Port $port_no/g" /etc/ssh/sshd_config
+
+#SSH Restart
+sudo service ssh restart
+sudo service ssh status

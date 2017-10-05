@@ -18,7 +18,7 @@ dbserver_flag=0
 storage_flag=0
 
 #functions
-#Parameters input - usage
+#Parameters - usage
 usage() {
   echo "Usage: $PROG [options]"
   echo "Ommit options to just to do the basic setup"
@@ -32,11 +32,7 @@ timestamp(){
   date | tee -a $logfile
 }
 
-
-ssh_user=$(echo $USER)
-ssh_host=localhost
-ssh_directory=$(echo $PWD)
-
+# Dealing with the parameters
 while getopts ":h :w :d :s :v" opt;
 do
   case $opt in
@@ -90,7 +86,7 @@ echo "******************************************"
 echo "** Welcome to the HISP SA server setup. **"
 echo "******************************************"
 #into the log
-echo "Server setup started" >> $logfile
+echo "Server setup started" > $logfile
 timestamp
 echo "Flags have been set as following" | tee -a $logfile
 echo "verbose_flag = $verbose_flag" | tee -a $logfile
@@ -99,11 +95,30 @@ echo "dbserver_flag = $dbserver_flag" | tee -a $logfile
 echo "webserver_flag = $webserver_flag" | tee -a $logfile
 #Downloading files required for the setup
 
-#install supporting software
-echo "sudo apt update"
-sudo apt update >> $logfile
 
-echo "sudo apt upgrade"
+#install supporting software
+#updateing the apt tree
+echo ""  | tee -a $logfile
+echo "*****************" | tee -a $logfile
+echo "** apt update **"  | tee -a $logfile
+echo "*****************" | tee -a $logfile
+timestamp
+sudo apt update | tee -a $logfile
+
+#upgrade pre isntalled software
+echo ""  | tee -a $logfile
+echo "*****************" | tee -a $logfile
+echo "** apt upgrade **" | tee -a $logfile
+echo "*****************" | tee -a $logfile
+timestamp
+sudo apt update | tee -a $logfile
 
 #setting up the network
-ifconfig eth0 | grep "inet addr" | awk '{print $2}' | awk -F '.' '{print $4}'
+clear
+echo "*******************" | tee -a $logfile
+echo "** Network Setup **" | tee -a $logfile
+echo "*******************" | tee -a $logfile
+#TODO add this too the parameters
+echo "Please enter the UP for the 3rd octate"
+read inputIp
+bash /home/hisp/scripts/setup/ethadd $inputIp
