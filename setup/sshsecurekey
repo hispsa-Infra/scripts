@@ -5,9 +5,9 @@
 #|  _  | | |  `--. \  __/   `--. \  _  |
 #| | | |_| |_/\__/ / |     /\__/ / | | |
 #\_| |_/\___/\____/\_|     \____/\_| |_/
-#Setting up a server, allows for switches to change the type of server deployed.
+#Turnning off password authentication.
 #Author	: Renier Rousseau
-#Created Date 	: 2 October 2017
+#Created Date 	: October 2017
 #Generate Backup
 sudo touch /etc/ssh/sshd_config.bak
 sudo sh -c 'cat /etc/ssh/sshd_config > /etc/ssh/sshd_config.bak'

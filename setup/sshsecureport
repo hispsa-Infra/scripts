@@ -5,7 +5,7 @@
 #|  _  | | |  `--. \  __/   `--. \  _  |
 #| | | |_| |_/\__/ / |     /\__/ / | | |
 #\_| |_/\___/\____/\_|     \____/\_| |_/
-#Setting up a server, allows for switches to change the type of server deployed.
+#Changing the port of the ssh
 #Author	: Renier Rousseau
 #Created Date 	: October 2017
 #Generate Backup

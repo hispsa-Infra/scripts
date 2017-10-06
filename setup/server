@@ -61,6 +61,7 @@ done
 
 shift $(( $OPTIND-1 ))
 
+#TODO remove these tests
 #Testing webserver_flag
 if [[ $webserver_flag = 1 ]]; then
   echo "webserver_flag is On"
@@ -80,6 +81,10 @@ elif [[ $storage_flag = 0 ]]; then
   echo "storage_flag is Off"
 fi
 
+#Create working folders
+mkdir ~/scripts
+mkdir ~/scripts/setup
+
 #Userfeedback - initial
 clear
 echo "******************************************"
@@ -94,7 +99,11 @@ echo "storage_flag = $storage_flag" | tee -a $logfile
 echo "dbserver_flag = $dbserver_flag" | tee -a $logfile
 echo "webserver_flag = $webserver_flag" | tee -a $logfile
 #Downloading files required for the setup
-
+#TODO add error checkcing on downloaded files
+#netwrok setup docs
+wget -O ~/scripts/setup/ethadd https://raw.githubusercontent.com/hispsa-Infra/scripts/master/setup/ethadd
+wget -O ~/scripts/setup/sshsecurekey https://raw.githubusercontent.com/hispsa-Infra/scripts/master/setup/sshsecurekey
+wget -O ~/scripts/setup/sshsecureport https://raw.githubusercontent.com/hispsa-Infra/scripts/master/setup/sshsecureport
 
 #install supporting software
 #updateing the apt tree
@@ -114,11 +123,24 @@ timestamp
 sudo apt update | tee -a $logfile
 
 #setting up the network
+echo "" | tee -a $logfile
 clear
+timestamp
 echo "*******************" | tee -a $logfile
 echo "** Network Setup **" | tee -a $logfile
 echo "*******************" | tee -a $logfile
+#Setting up the back link ip
 #TODO add this too the parameters
-echo "Please enter the UP for the 3rd octate"
+echo "*** USER INPUT *** Please enter the IP for the 3rd octate"
 read inputIp
-bash /home/hisp/scripts/setup/ethadd $inputIp
+echo "bash ~/scripts/setup/ethadd $inputIp" | tee -a $logfile
+bash ~/scripts/setup/ethadd $inputIp | tee -a $logfile
+
+#securing the network
+#TODO add this too parameters
+echo "*** USER INPUT *** Please enter the port for SSH"
+read inputPort
+echo "bash ~/scripts/setup/sshsecureport $inputPort" | tee -a $logfile
+bash ~/scripts/setup/sshsecureport $inputPort | tee -a $logfile
+echo "bash ~/scripts/setup/sshsecurekey $inputPort" | tee -a $logfile
+bash ~/scripts/setup/sshsecurekey  | tee -a $logfile
