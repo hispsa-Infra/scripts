@@ -14,13 +14,15 @@ usage() {
   echo " -u     User at remote Host for SSH Key (Default - current User i.e. $USER)"
   echo " -r     Remote Host for SSH Key (Default - localhost)"
   echo " -d     Directory for SSH keys (Default - current Directory i.e. $PWD)"
+  echo " -p     Port (Defualt is 22)"
 }
 
 ssh_user=$(echo $USER)
 ssh_host=localhost
 ssh_directory=$(echo $PWD)
+ssh_port=22
 
-while getopts ":h:u:r:d:" opt;
+while getopts ":h:u:r:d:p:" opt;
 do
   case $opt in
     u)
@@ -31,6 +33,9 @@ do
     ;;
     d)
       ssh_directory=$OPTARG;
+    ;;
+    p)
+      ssh_port=$OPTARG;
     ;;
     h)
       usage;
@@ -60,7 +65,7 @@ sudo sh -c "echo '[ -e ~/passwd.txt ] && cat passwd.txt && passwd && rm -f passw
 
 
 #The users will be added according to the folders in the Directory specified
-infra_users=($(ssh $ssh_user@$ssh_host "ls $ssh_directory"))
+infra_users=($(ssh -p $ssh_port $ssh_user@$ssh_host "ls $ssh_directory"))
 
 
 #Move thoguht the arry of users and creates them and copies the keys.
@@ -78,7 +83,7 @@ for str_infra_user in "${infra_users[@]}"; do
 
   #get the key from a remote host and add it too the users authorized_keys file
   sudo mkdir /home/$str_infra_user/.ssh
-  scp $ssh_user@$ssh_host:$ssh_directory/$str_infra_user/authorized_keys /tmp/.authorized_keys
+  scp -P $ssh_port $ssh_user@$ssh_host:$ssh_directory/$str_infra_user/authorized_keys /tmp/.authorized_keys
   sudo mv /tmp/.authorized_keys /home/$str_infra_user/.ssh/authorized_keys
 
   #Changing the owner ship
