@@ -65,8 +65,11 @@ sudo sh -c "echo '[ -e ~/passwd.txt ] && cat passwd.txt && passwd && rm -f passw
 
 
 #The users will be added according to the folders in the Directory specified
-infra_users=($(ssh -p $ssh_port $ssh_user@$ssh_host "ls $ssh_directory"))
-
+if [[ $ssh_host = "localhost" ]]; then
+  infra_users=($($ssh_directory))
+elif [[ $ssh_host != "localhost" ]]; then
+  infra_users=($(ssh -p $ssh_port $ssh_user@$ssh_host "ls $ssh_directory"))
+fi
 
 #Move thoguht the arry of users and creates them and copies the keys.
 for str_infra_user in "${infra_users[@]}"; do
@@ -83,7 +86,11 @@ for str_infra_user in "${infra_users[@]}"; do
 
   #get the key from a remote host and add it too the users authorized_keys file
   sudo mkdir /home/$str_infra_user/.ssh
+  if [[ $ssh_host = "localhost" ]]; then
+    cp $ssh_directory/$str_infra_user/authorized_keys /tmp/.authorized_keys
+  elif [[ $ssh_host != "localhost" ]]; then
   scp -P $ssh_port $ssh_user@$ssh_host:$ssh_directory/$str_infra_user/authorized_keys /tmp/.authorized_keys
+  fi
   sudo mv /tmp/.authorized_keys /home/$str_infra_user/.ssh/authorized_keys
 
   #Changing the owner ship
