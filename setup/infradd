@@ -55,11 +55,11 @@ shift $(( $OPTIND-1 ))
 
 #Updating the Skel file to edit the bashrc of the User we are about to add
 #Adding a network audit to bashrc
-sudo sh -c "echo -e 'echo **** Network ****\nnetstat -ntl' >> /etc/skel/.bashrc "
+sudo sh -c "echo '**** Network ****\nnetstat -ntl' >> /etc/skel/.bashrc "
 #Adding a space check to bashrc
-sudo sh -c "echo -e 'echo **** Harddrive ****\ndf -h /' >> /etc/skel/.bashrc "
+sudo sh -c "echo '**** Harddrive ****\ndf -h /' >> /etc/skel/.bashrc "
 #Adding a Memory usage check to bashrc
-sudo sh -c "echo -e 'echo **** Memory ****\nfree -h' >> /etc/skel/.bashrc "
+sudo sh -c "echo '**** Memory ****\nfree -h' >> /etc/skel/.bashrc "
 #check for the passwd.txt file one startup and propt the content and a passwd update
 sudo sh -c "echo '[ -e ~/passwd.txt ] && cat passwd.txt && passwd && rm -f passwd.txt ' >> /etc/skel/.bashrc "
 
