@@ -12,6 +12,8 @@
 
 #Pull Parameters from the .conf file
 source backup.conf
+
+
 {
   #Header
 	echo "---------------------------------------------------------------------"
@@ -41,8 +43,7 @@ source backup.conf
     #Time Stamp for starting the dunmp
 		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 		echo "$timeinfo >  - Dumping..."
-    #TODO update this to use jobs
-		/usr/bin/pg_dump -f $backup_dir/$i-ddb-$dayinfo.sql -T analytics* $i
+		/usr/bin/pg_dump --jobs=5 --exclude-table=analytics* --format=directory --file=$backup_dir/$i-ddb-$dayinfo $i
 
     #Time Stamp for Completion of dump.
     timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
@@ -54,22 +55,18 @@ source backup.conf
 	echo "$timeinfo > Step 2: Starting pack/encryption of databases"
 
   #for each database(i) that is not owned by postgres...
-  #TODO rebuild this to be upgraded to the new pg_dump output mode
 	for i in $databases; do
     #time stamp for start of encryption
 		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 		echo "$timeinfo >  - Pack/encrypting $i ---------------->"
-		7z a -mx=1 -p$encrypt_key $backup_dir/$i-ddb-$dayinfo.7z $backup_dir/$i-ddb-$dayinfo.sql
+		7z a -mx=1 -p$encrypt_key $backup_dir/$i-ddb-$dayinfo.7z $backup_dir/$i-ddb-$dayinfo
 
     #if its the weekly backup key day then do weekly backup
 		if [ "$dayinfo" == $weekly_backup ]; then
-			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-			echo "$timeinfo >  - (Weekly) Copy..."
-			cp $backup_dir/$i-ddb-$dayinfo.sql $backup_dir/$i-wdb-Week$weekinfo.sql
       #Time stamp for packing weekly backup
       timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
       echo "$timeinfo >  - (Weekly) Pack/encrypt..."
-      7z a -mx=1 -p$encrypt_key $backup_dir/$i-wdb-Week$weekinfo.7z $backup_dir/$i-wdb-Week$weekinfo.sql
+      7z a -mx=1 -p$encrypt_key $backup_dir/$i-wdb-Week$weekinfo.7z $backup_dir/$i-ddb-$dayinfo
 		fi
 
     #Time Stamp closing the Packaging
@@ -78,7 +75,6 @@ source backup.conf
 	done
 
   #Uploading
-  #TODO this needs to be changed to scp
   #Time Stamp start of uploading
 	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 	echo "$timeinfo > Step 3: Upload of databases"
@@ -99,10 +95,11 @@ source backup.conf
     #TODO move this too a clean up Step
     #removing uploaded database
 		rm $backup_dir/$i-?db-*.*
-        timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-        echo "$timeinfo > Upload: $i Complete <----------------"
-        echo ""
-        sleep 3
+    rm -R $backup_dir/$i-?db-*
+    timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo > Upload: $i Complete <----------------"
+    echo ""
+    sleep 3
 	done
   #Time stamp closing message
 	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
@@ -111,5 +108,5 @@ source backup.conf
 } 2>&1 | tee $logfile
 
 gzip -9 $logfile
-ftp-upload -h $host_ip1 -u $ftp_user1 -d $ftp_dir1 --password=$ftp_pass1 $logfile.gz
+scp -P $remote_port $logfile.gz $remote_user@$remote_ip:$remote_dir
 rm $logfile.gz
