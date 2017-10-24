@@ -12,7 +12,7 @@
 #Parameters input - usage
 
 #Backing up the files that will be changed
-cp /etc/network/interfaces /etc/network/interfaces.bak
+sudo cp /etc/network/interfaces /etc/network/interfaces.bak
 
 #TODO error chekcing for $1 and $2
 #TODO Add usages - sudo ./ethadd.sh <Physcial Server> <Public Last octicsajiovjcasio>
