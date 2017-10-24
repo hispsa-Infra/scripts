@@ -65,8 +65,11 @@ source backup.conf
 		if [ "$dayinfo" == $weekly_backup ]; then
 			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 			echo "$timeinfo >  - (Weekly) Copy..."
-      #TODO shouldnt this be the encrypted file.
 			cp $backup_dir/$i-ddb-$dayinfo.sql $backup_dir/$i-wdb-Week$weekinfo.sql
+      #Time stamp for packing weekly backup
+      timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+      echo "$timeinfo >  - (Weekly) Pack/encrypt..."
+      7z a -mx=1 -p$encrypt_key $backup_dir/$i-wdb-Week$weekinfo.7z $backup_dir/$i-wdb-Week$weekinfo.sql
 		fi
 
     #Time Stamp closing the Packaging
@@ -88,11 +91,6 @@ source backup.conf
 
     #if its the weekly backup key day then do weekly backup
     if [ "$dayinfo" == $weekly_backup ]; then
-      #TODO move this to the Packaging section
-      #Time stamp for packing weekly backup
-      timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-			echo "$timeinfo >  - (Weekly) Pack/encrypt..."
-			7z a -mx=1 -p$encrypt_key $backup_dir/$i-wdb-Week$weekinfo.7z $backup_dir/$i-wdb-Week$weekinfo.sql
       #Time stamp for uploading the weekly backup
 			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 			echo "$timeinfo >  - (Weekly) Uploading -> Disaster Recovery Server..."
