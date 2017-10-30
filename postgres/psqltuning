@@ -57,7 +57,7 @@ eth1Add=$(grep -E 'address 10.0.*' /etc/network/interfaces | awk '{print $2}')
 listing_address=$(echo "localhost, $eth1Add")
 port=$(echo '3447')
 wal_buf=$(echo '-1')
-wal_writer_delay=$(echo '10000')
+wal_writer_delay=$(echo '10000ms')
 check_point_target=$(echo '0.8')
 sync_commit=$(echo 'off')
 
@@ -82,13 +82,13 @@ echo "port = $port"
 #Max Connections
 echo "max_connections = $max_connections"
 #Shared Buffer
-echo "shared_buffers = $shared_buffers"
+echo "shared_buffers = $shared_buffers""MB"
 #Work Mem
-echo "work_mem = $work_mem"
+echo "work_mem = $work_mem""MB"
 #Maintenance Work Mem
-echo "maintenance_work_mem = $main_work_mem"
+echo "maintenance_work_mem = $main_work_mem""MB"
 #Effective Cache Size
-echo "effective_cache_size = $effective_cahe"
+echo "effective_cache_size = $effective_cahe""MB"
 #Synchronous Commit
 echo "synchronous_commit = $sync_commit"
 #WAL Buffers
