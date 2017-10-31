@@ -13,7 +13,6 @@
 #Pull Parameters from the .conf file
 source backup.conf
 
-
 {
   #Header
 	echo "---------------------------------------------------------------------"

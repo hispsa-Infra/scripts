@@ -120,8 +120,8 @@ for ((instance_no=1;instance_no<=$tomcat_no_of_instances;i++));
     echo "Creating Tomcat User $instance_no" | tee -a $logfile
     echo "sudo useradd -m $instance_name -s /bin/bash" | tee -a $logfile
     sudo useradd -m $instance_name -s /bin/bash | tee -a $logfile
-    echo "sudo su $instance_name -c 'tomcat8-instance-create -p 8080 -c 8005 /tomcat/tomcat8-dhis2-1'" | tee -a $logfile
-    sudo su tomcat1 -c 'tomcat8-instance-create -p 8080 -c 8005 /tomcat/tomcat8-dhis2-1' | tee -a $logfile
+    echo "sudo su $instance_name -c 'tomcat8-instance-create -p $tomcat_start_com_port -c $tomcat_start_ctl_port /$tomcat_prefix/tomcat8-dhis2-$instance_no'" | tee -a $logfile
+    sudo su $instance_name -c "tomcat8-instance-create -p $tomcat_start_com_port -c $tomcat_start_ctl_port /$tomcat_prefix/tomcat8-dhis2-$instance_no" | tee -a $logfile
     #TODO add tunning to the webserver ((system.ram - 512)/no.of.instance)
     #TODO copy in dhis.conf and edit it.
     #TODO accept war link.
