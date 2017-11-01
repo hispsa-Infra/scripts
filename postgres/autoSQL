@@ -1,0 +1,32 @@
+#!/bin/bash
+#_   _ _____ ___________   _____  ___
+#| | | |_   _/  ___| ___ \ /  ___|/ _ \
+#| |_| | | | \ `--.| |_/ / \ `--./ /_\ \
+#|  _  | | |  `--. \  __/   `--. \  _  |
+#| | | |_| |_/\__/ / |     /\__/ / | | |
+#\_| |_/\___/\____/\_|     \____/\_| |_/
+#Run relavent scripts
+#Author	: Renier Rousseau
+#Created Date 	: November 2017
+
+#Review the .conf file local specified Varriables
+source ~/autoSQL.conf
+
+{
+  #Header
+  echo "---------------------------------------------------------------------"
+  echo "      HISP SOUTH AFRICA - autoSQL Script - Ver 1.0 - October 2017"
+  echo "---------------------------------------------------------------------"
+  echo ""
+  #cycle through the databases
+  for str_database in "${databases_ls[@]}"; do
+    #get all .sql files in the database folder
+    script_ls=($(ls $db_ls_folder/$str_database/*.sql))
+    #cycle through all the .sql files and excute the against the db the folder
+    # is named for.
+    for str_script in "${script_ls[@]}"; do
+      #execute script
+      psql -f $db_ls_folder/$str_database/$str_script $str_database
+    done
+  done
+} 2>&1 | tee $logfile
