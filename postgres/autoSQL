@@ -30,7 +30,7 @@ source ~/autoSQL.conf
     echo "$timeinfo > Database: $str_database ---------------->"
 
     #get all .sql files in the database folder
-    script_ls=($(ls $db_ls_folder/$str_database/*.sql))
+    script_ls=($(ls $db_ls_folder$str_database | grep sql))
     #cycle through all the .sql files and excute the against the db the folder
     # is named for.
     for str_script in "${script_ls[@]}"; do
@@ -39,8 +39,8 @@ source ~/autoSQL.conf
       echo "$timeinfo > Script: $str_script ---------------->"
 
       #execute script
-      echo "psql -f $db_ls_folder/$str_database/$str_script $str_database"
-      psql -f $db_ls_folder/$str_database/$str_script $str_database
+      echo "psql -f $db_ls_folder$str_database/$str_script $str_database"
+      psql -f $db_ls_folder$str_database/$str_script $str_database
 
       #Time Stamp for each Script
       timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
