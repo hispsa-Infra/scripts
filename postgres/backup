@@ -11,8 +11,7 @@
 #Created Date 	: October 2017
 
 #Pull Parameters from the .conf file
-source backup.conf
-
+source ~/backup.conf
 
 {
   #Header

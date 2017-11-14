@@ -9,92 +9,36 @@
 #Author	: Renier Rousseau
 #Created Date 	: 2 October 2017
 
+#TODO pass all Variables via an include file i.e. server.conf
+source server.conf
 
-#Variables
-logfile=setup.log
-#Flags
-webserver_flag=0
-dbserver_flag=0
-storage_flag=0
 
 #functions
-#Parameters - usage
-usage() {
-  echo "Usage: $PROG [options]"
-  echo "Ommit options to just to do the basic setup"
-  echo " -w     Setup a webserver"
-  echo " -d     Setup a database server"
-  echo " -s     Setup a storage server"
-  echo " -h     Print this message"
-}
 #timestamp
 timestamp(){
   date | tee -a $logfile
 }
 
-# Dealing with the parameters
-while getopts ":h :w :d :s :v" opt;
-do
-  case $opt in
-    h)
-      usage;
-      exit;
-      ;;
-    w)
-      webserver_flag=1
-      ;;
-    d)
-      dbserver_flag=1
-      ;;
-    s)
-      storage_flag=1
-      ;;
-    /?)
-      usage >&2
-      exit 1;
-      ;;
-    :)
-      usage >&2
-      exit 1
-  esac
-done
-
-shift $(( $OPTIND-1 ))
-
-#Testing webserver_flag
-if [[ $webserver_flag = 1 ]]; then
-  echo "webserver_flag is On"
-elif [[ $webserver_flag = 0 ]]; then
-  echo "webserver_flag is Off"
-fi
-#Testing dbserver_flag
-if [[ $dbserver_flag = 1 ]]; then
-  echo "dbserver_flag is On"
-elif [[ $dbserver_flag = 0 ]]; then
-  echo "dbserver_flag is Off"
-fi
-#Testing storage_flag
-if [[ $storage_flag = 1 ]]; then
-  echo "storage_flag is On"
-elif [[ $storage_flag = 0 ]]; then
-  echo "storage_flag is Off"
-fi
+#Create working folders
+mkdir ~/scripts
+mkdir ~/scripts/setup
 
 #Userfeedback - initial
 clear
-echo "******************************************"
-echo "** Welcome to the HISP SA server setup. **"
-echo "******************************************"
-#into the log
-echo "Server setup started" > $logfile
+echo "******************************************" | tee -a $logfile
+echo "** Welcome to the HISP SA server setup. **" | tee -a $logfile
+echo "******************************************" | tee -a $logfile
 timestamp
 echo "Flags have been set as following" | tee -a $logfile
-echo "verbose_flag = $verbose_flag" | tee -a $logfile
 echo "storage_flag = $storage_flag" | tee -a $logfile
 echo "dbserver_flag = $dbserver_flag" | tee -a $logfile
 echo "webserver_flag = $webserver_flag" | tee -a $logfile
 #Downloading files required for the setup
-
+#TODO add error checkcing on downloaded files
+#netwrok setup docs
+wget -O ~/scripts/setup/ethadd https://raw.githubusercontent.com/hispsa-Infra/scripts/master/setup/ethadd
+wget -O ~/scripts/setup/sshsecurekey https://raw.githubusercontent.com/hispsa-Infra/scripts/master/setup/sshsecurekey
+wget -O ~/scripts/setup/sshsecureport https://raw.githubusercontent.com/hispsa-Infra/scripts/master/setup/sshsecureport
 
 #install supporting software
 #updateing the apt tree
@@ -114,11 +58,72 @@ timestamp
 sudo apt update | tee -a $logfile
 
 #setting up the network
+echo "" | tee -a $logfile
 clear
+timestamp
 echo "*******************" | tee -a $logfile
 echo "** Network Setup **" | tee -a $logfile
 echo "*******************" | tee -a $logfile
-#TODO add this too the parameters
-echo "Please enter the UP for the 3rd octate"
-read inputIp
-bash /home/hisp/scripts/setup/ethadd $inputIp
+#Setting up the back link ip
+echo "bash ~/scripts/setup/ethadd $network_update" | tee -a $logfile
+bash ~/scripts/setup/ethadd $network_update | tee -a $logfile
+
+#securing the network
+echo "bash ~/scripts/setup/sshsecureport $ssh_port" | tee -a $logfile
+bash ~/scripts/setup/sshsecureport $ssh_port | tee -a $logfile
+echo "bash ~/scripts/setup/sshsecurekey" | tee -a $logfile
+bash ~/scripts/setup/sshsecurekey  | tee -a $logfile
+
+#TODO fire wall.
+
+#TODO add if for both web and db server.
+
+#webserver setup
+
+#TODO add scaled webserver setup.
+if [[ $webserver_flag = 1 ]]; then
+  echo "" | tee -a $logfile
+  clear
+  timestamp
+  echo "*********************" | tee -a $logfile
+  echo "** Webserver Setup **" | tee -a $logfile
+  echo "*********************" | tee -a $logfile
+
+  #Install supporting tech
+  echo "Installing Supporting Application" | tee -a $logfile
+  echo "sudo apt install -y p7zip-full zip ntp munin" | tee -a $logfile
+  sudo apt install -y p7zip-full zip ntp munin | tee -a $logfile
+  #Install java
+  echo "Installing Java" | tee -a $logfile
+  echo "sudo apt-get install -y openjdk-8-jdk" | tee -a $logfile
+  sudo apt-get install -y openjdk-8-jdk | tee -a $logfile
+  #install tomcat
+  echo "Installing Tomcat" | tee -a $logfile
+  echo "sudo apt-get install -y tomcat8-user" | tee -a $logfile
+  sudo apt-get install -y tomcat8-user | tee -a $logfile
+
+  #creating the tomcat work space
+  echo "Preping the Tomcat Work Space" | tee -a $logfile
+  echo "sudo mkdir /$tomcat_prefix" | tee -a $logfile
+  sudo mkdir /$tomcat_prefix | tee -a $logfile
+  echo "sudo chmod -R 777 /$tomcat_prefix" | tee -a $logfile
+  sudo chmod -R 777 /$tomcat_prefix | tee -a $logfile
+
+#create $tomcat_no_of_instances of tomcat instances
+echo echo "Creating $tomcat_no_of_instances Tomcat Instance/s" | tee -a $logfile
+for ((instance_no=1;instance_no<=$tomcat_no_of_instances;i++));
+  do
+    #Creating Temp Variables related to this instance_no
+    instance_name=$tomcat_prefix$instance_no
+    #createing tomcat instance/s
+    echo "Creating Tomcat Instance $instance_no" | tee -a $logfile
+    echo "Creating Tomcat User $instance_no" | tee -a $logfile
+    echo "sudo useradd -m $instance_name -s /bin/bash" | tee -a $logfile
+    sudo useradd -m $instance_name -s /bin/bash | tee -a $logfile
+    echo "sudo su $instance_name -c 'tomcat8-instance-create -p $tomcat_start_com_port -c $tomcat_start_ctl_port /$tomcat_prefix/tomcat8-dhis2-$instance_no'" | tee -a $logfile
+    sudo su $instance_name -c "tomcat8-instance-create -p $tomcat_start_com_port -c $tomcat_start_ctl_port /$tomcat_prefix/tomcat8-dhis2-$instance_no" | tee -a $logfile
+    #TODO add tunning to the webserver ((system.ram - 512)/no.of.instance)
+    #TODO copy in dhis.conf and edit it.
+    #TODO accept war link.
+  done
+fi
