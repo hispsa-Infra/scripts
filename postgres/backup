@@ -51,7 +51,7 @@ source ~/backup.conf
 
   #Starting the Packaging and encryption
 	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-	echo "$timeinfo > Step 2: Starting pack/encryption of databases"
+	echo "$timeinfo > Step 2: Starting pack/encryption and Uploading of databases"
 
   #for each database(i) that is not owned by postgres...
 	for i in $databases; do
@@ -59,6 +59,9 @@ source ~/backup.conf
 		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 		echo "$timeinfo >  - Pack/encrypting $i ---------------->"
 		7z a -mx=1 -p$encrypt_key $backup_dir/$i-ddb-$dayinfo.7z $backup_dir/$i-ddb-$dayinfo
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Uploading: $i ---------------->"
+		scp -P $remote_port $backup_dir/$i-ddb-$dayinfo.7z $remote_user@$remote_ip:$remote_dir
 
     #if its the weekly backup key day then do weekly backup
 		if [ "$dayinfo" == $weekly_backup ]; then
@@ -66,6 +69,9 @@ source ~/backup.conf
       timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
       echo "$timeinfo >  - (Weekly) Pack/encrypt..."
       7z a -mx=1 -p$encrypt_key $backup_dir/$i-wdb-Week$weekinfo.7z $backup_dir/$i-ddb-$dayinfo
+			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+			echo "$timeinfo >  - (Weekly) Uploading -> Disaster Recovery Server..."
+			scp -P $remote_port $backup_dir/$i-wdb-Week$weekinfo.7z $remote_user@$remote_ip:$remote_dir
 		fi
 
     #Time Stamp closing the Packaging
@@ -73,36 +79,22 @@ source ~/backup.conf
     echo "$timeinfo > Pack: $i Complete <----------------"
 	done
 
-  #Uploading
-  #Time Stamp start of uploading
+  #Cleapup
+  #Time Stamp start of Cleanup
 	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-	echo "$timeinfo > Step 3: Upload of databases"
+	echo "$timeinfo > Step 3: Clean Up"
   #for each database(i) that is not owned by postgres...
 	for i in $databases; do
-    #Time Stamp for Uploading i
-		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-		echo "$timeinfo >  - Uploading: $i ---------------->"
-		scp -P $remote_port $backup_dir/$i-ddb-$dayinfo.7z $remote_user@$remote_ip:$remote_dir
-
-    #if its the weekly backup key day then do weekly backup
-    if [ "$dayinfo" == $weekly_backup ]; then
-      #Time stamp for uploading the weekly backup
-			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-			echo "$timeinfo >  - (Weekly) Uploading -> Disaster Recovery Server..."
-      scp -P $remote_port $backup_dir/$i-wdb-Week$weekinfo.7z $remote_user@$remote_ip:$remote_dir
-		fi
     #TODO move this too a clean up Step
     #removing uploaded database
 		rm $backup_dir/$i-?db-*.*
     rm -R $backup_dir/$i-?db-*
-    timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-    echo "$timeinfo > Upload: $i Complete <----------------"
     echo ""
     sleep 3
 	done
   #Time stamp closing message
 	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-	echo "$timedateinfo > ** Complete Backup of databases **"
+	echo "$timedateinfo > ** Complete Clean Up **"
 	echo "$timedateinfo > ---------------------------------------------------------------------"
 } 2>&1 | tee $logfile
 
