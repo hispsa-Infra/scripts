@@ -88,7 +88,7 @@ echo "work_mem = $work_mem""MB"
 #Maintenance Work Mem
 echo "maintenance_work_mem = $main_work_mem""MB"
 #Effective Cache Size
-echo "effective_cache_size = $effective_cahe""MB"
+echo "effective_cache_size = $effective_cahe"
 #Synchronous Commit
 echo "synchronous_commit = $sync_commit"
 #WAL Buffers
