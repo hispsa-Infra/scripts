@@ -1,0 +1,83 @@
+#!/bin/bash
+#_   _ _____ ___________   _____  ___
+#| | | |_   _/  ___| ___ \ /  ___|/ _ \
+#| |_| | | | \ `--.| |_/ / \ `--./ /_\ \
+#|  _  | | |  `--. \  __/   `--. \  _  |
+#| | | |_| |_/\__/ / |     /\__/ / | | |
+#\_| |_/\___/\____/\_|     \____/\_| |_/
+#Rotate the catalina.out file and compress it with other information.
+#Author	: Renier Rousseau
+#Created Date : Novemeber 2017
+
+source ~/logRotate.conf
+
+{
+  #Header
+  echo "---------------------------------------------------------------------"
+  echo "      HISP SOUTH AFRICA - logRotate Script - Ver 1.0 - Novemeber 2017"
+  echo "---------------------------------------------------------------------"
+  echo ""
+
+  #Timestamp
+  timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+  echo "$timeinfo > ** Starting Collecting Information About Local Tomcats **"
+
+  #cycle through the databases
+  for str_tomcat in "${tomcat_ls[@]}"; do
+
+    dhis2_home=$(cat $tomcat_folder/$str_tomcat/bin/setenv.sh  | grep DHIS2_HOME | cut -d "'" -f 2)
+
+    #Test if its dhis.conf or hibernate.properties
+    if [[ -e $dhis2_home/dhis.conf ]];
+      if grep -q filestore.container "$dhis2_home/dhis.conf"; then
+        files_folder=$(cat $dhis2_home/dhis.conf | grep filestore.container | cut -d " " -f 3)
+      fi
+      #Collect the database  name
+      database=$(cat $dhis2_home/dhis.conf | grep connection.url | cut -d "/" -f 4)
+    #Test if its hibernate.properties
+    elif [[ -e $dhis2_home/hibernate.properties ]]; then
+      if grep -q filestore.container "$dhis2_home/hibernate.properties"; then
+        files_folder=$(cat $dhis2_home/hibernate.properties | grep filestore.container | cut -d " " -f 3)
+      fi
+      #Collect the database  name
+      database=$(cat $dhis2_home/hibernate.properties | grep connection.url | cut -d "/" -f 4)
+    fi
+
+    #create tmp folder that will get zip.
+    mkdir $work_dir/$database-week$weekinfo
+    storage_dir="$work_dir/$database-week$weekinfo/$dayinfo"
+    mkdir $storage_dir
+
+    #Collect War information
+    #unzip -q -p $tomcat_folder/$str_tomcat/webapps/ROOT/WEB-INF/lib/dhis-service-core-2.*.jar build.properties
+    webapps_ls=($(ls $tomcat_folder/$str_tomcat/webapps/)
+    for str_webapps in "${webapps_ls[@]}"; do
+      if [[ -f $tomcat_folder/$str_tomcat/webapps/$str_webapps ]]; then
+        touch $storage_dir/$database.warinfo
+        unzip -q -p $tomcat_folder/$str_tomcat/webapps/$str_webapps/WEB-INF/lib/dhis-service-core-2.*.jar build.properties >> $storage_dir/$database.warinfo
+      fi
+    done
+
+    #Collect files folder
+    cp -r $dhis2_home/$files_folder $storage_dir/
+    #Collect documents folder
+    cp -r $dhis2_home/documents $storage_dir/
+
+    #Move old .log and .txt files
+    logs_ls=($(ls $tomcat_folder/$str_tomcat/logs/ | grep log | grep -v $(date '+%Y-%m-%d'))
+    for str_log in "${logs_ls[@]}"; do
+       mv $tomcat_folder/$str_tomcat/logs/$str_log $storage_dir/
+    done
+
+    #TODO Rotate and Collect catalina.out
+    if [[ -e $dhis2_home/dhis.conf ]]; then
+      $storage_dir/catalina.out
+      cat mv $tomcat_folder/$str_tomcat/logs/catalina.out >> $storage_dir/catalina.out
+      echo "Log Rotated at $timeinfo" > $tomcat_folder/$str_tomcat/logs/catalina.out
+    fi
+    
+    #Clean up
+    cp $logfile $storage_dir/
+    7z a -mx=1 $storage_dir $storage_dir.7z
+  done
+} 2>&1 | tee $logfile

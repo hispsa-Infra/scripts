@@ -1,0 +1,131 @@
+#!/bin/bash
+#_   _ _____ ___________   _____  ___
+#| | | |_   _/  ___| ___ \ /  ___|/ _ \
+#| |_| | | | \ `--.| |_/ / \ `--./ /_\ \
+#|  _  | | |  `--. \  __/   `--. \  _  |
+#| | | |_| |_/\__/ / |     /\__/ / | | |
+#\_| |_/\___/\____/\_|     \____/\_| |_/
+#Backup all the databases on the current postgres system and push them to the -
+# backup server
+#Author	: Renier Rousseau
+#Created Date 	: October 2017
+
+#Pull Parameters from the .conf file
+source ~/backup.v3.5.conf
+
+{
+  #Header
+	echo "---------------------------------------------------------------------"
+  echo "      HISP SOUTH AFRICA - Backup Script - Ver 3.5 - October 2017"
+  echo "---------------------------------------------------------------------"
+	echo ""
+
+  #Time Stamping Starting time
+  timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+  echo "$timeinfo > ** Starting Backup of databases **"
+
+  #Time Stamping Starting of Dumps
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timeinfo > Step 1: Starting dump of databases"
+
+  #for each database(i) that is not owned by postgres...
+	for i in $databases; do
+    #Time Stamp for each Database
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo > Database: $i ---------------->"
+
+    #Time Stamp for starting Vacuuming
+    timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo >  - Vacuuming..."
+		/usr/bin/vacuumdb -z $i
+
+    #Time Stamp for starting the dunmp
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Dumping..."
+		/usr/bin/pg_dump --jobs=5 --exclude-table=analytics* --format=directory --file=$backup_dir/$i-ddb-$dayinfo $i
+
+    #Time Stamp for Completion of dump.
+    timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo > Dump: $i Complete <----------------"
+	done
+
+	#Starting the collecting of the Tomcat info
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timeinfo > Step 2: Start Collecting info from Tomcat Servers."
+
+  #for each database(i) that is not owned by postgres...
+	for i in $databases; do
+    #time stamp for start of collection
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Logs for $i ---------------->"
+
+		#collect information about the webserver linked to this database
+		temp_ip=$(cat /etc/postgres/$psql_version/main/pg_hba.conf | grep $i | grep $tomcat_ip | cut -f 6 | cut -d '/' -f 1)
+		scp -r -P $remote_port  $tomcat_user@$temp_ip:$tomcat_log_dir/$i-week$weekinfo/$dayinfo.7z $backup_dir/$i-ddb-$dayinfo
+
+    #if its the weekly backup key day then do weekly backup
+		if [ "$dayinfo" == $weekly_backup ]; then
+      #Time stamp for packing weekly backup
+      timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+      echo "$timeinfo >  - (Weekly) Logs..."
+			scp -r -P $remote_port  $tomcat_user@$temp_ip:$tomcat_log_dir/$i* $backup_dir/$i-ddb-$dayinfo
+			ssh -p $remote_port $tomcat_user@$temp_ip rm $tomcat_log_dir/$i*
+		fi
+
+    #Time Stamp closing the Log Collecting
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo > Logs : $i Complete <----------------"
+	done
+
+  #Starting the Packaging and encryption
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timeinfo > Step 2: Starting pack/encryption and Uploading of databases"
+
+  #for each database(i) that is not owned by postgres...
+	for i in $databases; do
+    #time stamp for start of encryption
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Pack/encrypting $i ---------------->"
+		7z a -mx=1 -p$encrypt_key $backup_dir/$i-ddb-$dayinfo.7z $backup_dir/$i-ddb-$dayinfo
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Uploading: $i ---------------->"
+		scp -P $remote_port $backup_dir/$i-ddb-$dayinfo.7z $remote_user@$remote_ip:$remote_dir
+
+    #if its the weekly backup key day then do weekly backup
+		if [ "$dayinfo" == $weekly_backup ]; then
+      #Time stamp for packing weekly backup
+      timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+      echo "$timeinfo >  - (Weekly) Pack/encrypt..."
+      7z a -mx=1 -p$encrypt_key $backup_dir/$i-wdb-Week$weekinfo.7z $backup_dir/$i-ddb-$dayinfo
+			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+			echo "$timeinfo >  - (Weekly) Uploading -> Disaster Recovery Server..."
+			scp -P $remote_port $backup_dir/$i-wdb-Week$weekinfo.7z $remote_user@$remote_ip:$remote_dir
+		fi
+
+    #Time Stamp closing the Packaging
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo > Pack: $i Complete <----------------"
+	done
+
+  #Cleapup
+  #Time Stamp start of Cleanup
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timeinfo > Step 3: Clean Up"
+  #for each database(i) that is not owned by postgres...
+	for i in $databases; do
+    #TODO move this too a clean up Step
+    #removing uploaded database
+		rm $backup_dir/$i-?db-*.*
+    rm -R $backup_dir/$i-?db-*
+    echo ""
+    sleep 3
+	done
+  #Time stamp closing message
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timedateinfo > ** Complete Clean Up **"
+	echo "$timedateinfo > ---------------------------------------------------------------------"
+} 2>&1 | tee $logfile
+
+gzip -9 $logfile
+scp -P $remote_port $logfile.gz $remote_user@$remote_ip:$remote_dir
+rm $logfile.gz
