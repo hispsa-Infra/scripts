@@ -26,7 +26,9 @@ cp /tmp/.working.bashrcMod/bashrc.conf /etc/skel/.bashrc
 users_ls=($(ls /home/))
 for user in "${users_ls[@]}"; do
   echo "$user - Updating bashrc"
+  #copy skel bashrc to user
   cp /etc/skel/.bashrc /home/$user/.bashrc
+  #set permissions
   chown $user:$user /home/$user/.bashrc
 done
 
