@@ -60,6 +60,7 @@ source ~/backup.v3.5.conf
 		echo "$timeinfo >  - Logs for $i ---------------->"
 
 		#collect information about the webserver linked to this database
+		#TODO loop though all pg-hba.conf enteries for a specific database
 		temp_ip=$(cat /etc/postgres/$psql_version/main/pg_hba.conf | grep $i | grep $tomcat_ip | cut -f 6 | cut -d '/' -f 1)
 		scp -r -P $remote_port  $tomcat_user@$temp_ip:$tomcat_log_dir/$i-week$weekinfo/$dayinfo.7z $backup_dir/$i-ddb-$dayinfo
 
