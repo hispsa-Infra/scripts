@@ -10,7 +10,7 @@
 #Created Date : Jan 2018
 
 #This file needs to be run as root.
-echo "This file needs to be run as root."
+echo "This script needs to be run as root."
 
 #Make Workspace
 mkdir /tmp/.working.bashrcMod
