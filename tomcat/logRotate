@@ -22,30 +22,38 @@ source ~/logRotate.conf
   timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
   echo "$timeinfo > ** Starting Collecting Information About Local Tomcats **"
 
-  #cycle through the databases
+  #cycle through the tomcat directorys
   for str_tomcat in "${tomcat_ls[@]}"; do
 
+    #locate the dhis2_home folder for the instance
     dhis2_home=$(cat $tomcat_folder/$str_tomcat/bin/setenv.sh  | grep DHIS2_HOME | cut -d "'" -f 2)
 
     #Test if its dhis.conf or hibernate.properties
     if [[ -e $dhis2_home/dhis.conf ]];
+      #Test to see if the files folder is specified
       if grep -q filestore.container "$dhis2_home/dhis.conf"; then
+        #IF specified adjust to that folder name
         files_folder=$(cat $dhis2_home/dhis.conf | grep filestore.container | cut -d " " -f 3)
       fi
+
       #Collect the database  name
       database=$(cat $dhis2_home/dhis.conf | grep connection.url | cut -d "/" -f 4)
+
     #Test if its hibernate.properties
     elif [[ -e $dhis2_home/hibernate.properties ]]; then
+      #Test to see if the files folder is specified
       if grep -q filestore.container "$dhis2_home/hibernate.properties"; then
+        #IF specified adjust to that folder name
         files_folder=$(cat $dhis2_home/hibernate.properties | grep filestore.container | cut -d " " -f 3)
       fi
+
       #Collect the database  name
       database=$(cat $dhis2_home/hibernate.properties | grep connection.url | cut -d "/" -f 4)
     fi
 
-    #create tmp folder that will get zip.
+    #create work space folder that will get zip.
     mkdir $work_dir/$database-week$weekinfo
-    storage_dir="$work_dir/$database-week$weekinfo/$dayinfo"
+    storage_dir="$work_dir/$database-week$weekinfo/$(hostname -s)-$str_tomcat-$dayinfo"
     mkdir $storage_dir
 
     #Collect War information
@@ -75,7 +83,7 @@ source ~/logRotate.conf
       cat mv $tomcat_folder/$str_tomcat/logs/catalina.out >> $storage_dir/catalina.out
       echo "Log Rotated at $timeinfo" > $tomcat_folder/$str_tomcat/logs/catalina.out
     fi
-    
+
     #Clean up
     cp $logfile $storage_dir/
     7z a -mx=1 $storage_dir $storage_dir.7z
