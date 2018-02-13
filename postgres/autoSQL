@@ -40,6 +40,7 @@ source ~/autoSQL.conf
 
       #execute script
       echo "psql -f $db_ls_folder$str_database/$str_script $str_database"
+      ls -lha $db_ls_folder$str_database/$str_script
       psql -f $db_ls_folder$str_database/$str_script $str_database
 
       #Time Stamp for each Script
