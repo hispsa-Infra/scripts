@@ -16,6 +16,7 @@ sudo cp /etc/network/interfaces /etc/network/interfaces.bak
 
 #TODO error chekcing for $1 and $2
 #TODO Add usages - sudo ./ethadd.sh <Physcial Server> <Public Last octicsajiovjcasio>
+#TODO lshw -class network - to be incorperated.
 personalip=$(ifconfig eth0 | grep "inet addr" | awk '{print $2}' | awk -F '.' '{print $4}')
 
 echo -e 'auto eth1' > /tmp/.eth.tmp
