@@ -16,6 +16,7 @@ source ~/backup.conf
 
 #TODO add exculde list
 #TODO work all of the steps into one for loop
+#TODO add error check for the scp
 
 ##Functions
 # 7zip Error Checking
@@ -23,30 +24,52 @@ source ~/backup.conf
 	case "$1" in
 		#Exit without Error
 		0)
-			echo "Zip Success Full"
+			echo "7zip : Zip Successful"
 		;;
 		#Exit with Error
 		1)
-			echo "Non Fatal Error - Not all files where accessable."
+			echo "ERROR : 7zip : Non Fatal Error - Not all files where accessable."
 		;;
 		#Exit with Fatel Error
 		2)
-			echo "Fatal error"
+			echo "ERROR : 7zip : Fatal error"
 		;;
 		#Exit with Syntax Error
 		7)
-			echo "Syntax Error"
+			echo "ERROR : 7zip : Syntax Error"
 		;;
 		#Exit with Memory Error
 		8)
-			echo "Not Enough Memory For Operation"
+			echo "ERROR : 7zip : Not Enough Memory For Operation"
 		;;
 		#Exit with User Intervention
 		255)
-			echo "User stopped the process"
+			echo "ERROR : 7zip : User stopped the process"
 		;;
 	esac
 }
+# SSH Error Checking
+SSHErrorCheck () {
+	case "$1" in
+		#Exit without Error
+		0)
+			echo "SSH : Connection Successful"
+		;;
+		#Exit with Error
+		1)
+			echo "ERROR : SSH : Generic"
+		;;
+		#Exit with Fatel Error
+		2)
+			echo "ERROR : SSH : Connection Failure"
+		;;
+		#Exit with User Intervention
+		255)
+			echo "ERROR : SSH : Connection Refused"
+		;;
+	esac
+}
+
 
 {
   #Header
@@ -93,17 +116,58 @@ source ~/backup.conf
 		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 		echo "$timeinfo > Database: $i ---------------->"
 
-		#build the connection string.
-		#TODO get ip address - pg-hba.conf
-		grep $pg_hba | grep $i | 
+		#test if the ip for the database is locked at 32 bits
+		if [[ $(cat $pg_hba | grep $i | cut -f 5 | cut -f 2 -d '/') = 32 ]]; then
+			web_copy_flag=0
 
-		#TODO get tomcat id - look in the /tomcat folder look at dhis.conf
-		#TODO build connectiong string to copy files
-		#TODO build connection string to get war version. - unzip -q -p webapps/ROOT/WEB-INF/lib/dhis-service-core-2.*.jar build.properties
+			#lock in the ip address for the webserver related to the database
+			web_ip=$(cat $pg_hba | grep $i | cut -f 5 | cut -f 1 -d '/')
+
+			#TODO get tomcat id - look in the /tomcat folder look at dhis.conf
+			instances=$(ssh -p $web_port $web_user@$web_ip	"ls $web_dir")
+			SSHErrorCheck $?
+
+			#Move through all the isntances on the webserver and locate the tomcat -
+			#	linked to this database
+			for j in $instances; do
+				#get the information about the instance database and compare to the db -
+				#	we are currently backing up.
+				db_test=$(ssh -p $web_port $web_use@$nat_ip "cat $web_dir/$j/$web_conf_dir/dhis.conf | grep url | cut -d '/' -f 4 | sed 's/\r$//'")
+				if [[ db_test = $i ]]; then
+					#Time Stamp for starting the Copy of files.
+					timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+					echo "$timeinfo > Copying File From Webserver For : $i ---------------->"
+
+					#copy all the files under the conf folder to the backup dir
+					scp -r -p $web_port $web_user@$web_ip:$web_dir/$j/$web_conf_dir/ $backup_dir/$i-ddb-$dayinfo/
+
+
+					#	- unzip -q -p webapps/ROOT/WEB-INF/lib/dhis-service-core-2.*.jar build.properties
+					webapps=$(ssh -p $web_port $web_user@$web_ip	"ls $web_dir/$j/webapps/")
+					for w in $webapps; do
+						ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$nat_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
+					done
+					#collect information about the folders currently in the webapps
+					web_copy_flag=1
+
+					#Time Stamp for Ending the Copy of files.
+					timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+					echo "$timeinfo > Copying File From Webserver For : $i <----------------"
+				fi
+
+			done
+
+		else
+			#Error Message if the PG_HBA entery is not 32 bit locked
+			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+			echo "$timeinfo > ERROR : $i PG_HBA Entery not locked at 32 bit."
+		fi
+		webserver_ip=$(cat $pg_hba | grep $i | cut -f 5 | cut -f 1 -d '/')
 
 		#Time Stamp for Completion of backup.
     timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
     echo "$timeinfo > Dump: $i Complete <----------------"
+
 	done
 
   #Starting the Packaging and encryption
