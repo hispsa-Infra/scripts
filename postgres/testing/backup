@@ -111,7 +111,7 @@ SSHErrorCheck () {
 	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 	echo "$timeinfo > Step 2: Starting backup of webserver"
 
-	for i in $database; do
+	for i in $databases; do
 		#Time Stamp for each DB's webserver
 		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 		echo "$timeinfo > Database: $i ---------------->"
@@ -132,19 +132,29 @@ SSHErrorCheck () {
 			for j in $instances; do
 				#get the information about the instance database and compare to the db -
 				#	we are currently backing up.
+				#TODO remove indicater
+				echo "Indicater 1"
 				db_test=$(ssh -p $web_port $web_use@$nat_ip "cat $web_dir/$j/$web_conf_dir/dhis.conf | grep url | cut -d '/' -f 4 | sed 's/\r$//'")
+				#TODO remove indicater
+				echo "Indicater 2"
 				if [[ db_test = $i ]]; then
 					#Time Stamp for starting the Copy of files.
 					timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 					echo "$timeinfo > Copying File From Webserver For : $i ---------------->"
 
 					#copy all the files under the conf folder to the backup dir
-					scp -r -p $web_port $web_user@$web_ip:$web_dir/$j/$web_conf_dir/ $backup_dir/$i-ddb-$dayinfo/
-
-
+					#TODO remove indicater
+					echo "Indicater 3"
+					scp -r -P $web_port $web_user@$web_ip:$web_dir/$j/$web_conf_dir/ $backup_dir/$i-ddb-$dayinfo/
+					#TODO remove indicater
+					echo "Indicater 4"
 					#	- unzip -q -p webapps/ROOT/WEB-INF/lib/dhis-service-core-2.*.jar build.properties
+					#TODO remove indicater
+					echo "Indicater 5"
 					webapps=$(ssh -p $web_port $web_user@$web_ip	"ls $web_dir/$j/webapps/")
 					for w in $webapps; do
+						#TODO remove indicater
+						echo "Indicater 6"
 						ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$nat_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
 					done
 					#collect information about the folders currently in the webapps
