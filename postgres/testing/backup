@@ -135,13 +135,13 @@ SSHErrorCheck () {
 				#TODO remove indicater
 				echo "Indicater 1"
 				echo "web_port = $web_port"
-				echo "web_use = $web_use"
+				echo "web_user = $web_user"
 				echo "web_ip = $web_ip"
 				echo "web_dir = $web_dir"
 				echo "j = $j"
 				echo "web_conf_dir = $web_conf_dir"
 
-				db_test=$(ssh -p $web_port $web_use@$web_ip "cat $web_dir/$j/$web_conf_dir/dhis.conf | grep url | cut -d '/' -f 4 | sed 's/\r$//'")
+				db_test=$(ssh -p $web_port $web_user@$web_ip "cat $web_dir/$j/$web_conf_dir/dhis.conf | grep url | cut -d '/' -f 4 | sed 's/\r$//'")
 				#TODO remove indicater
 				echo "Indicater 2"
 				if [[ db_test = $i ]]; then
