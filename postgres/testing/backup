@@ -144,6 +144,7 @@ SSHErrorCheck () {
 				db_test=$(ssh -p $web_port $web_user@$web_ip "cat $web_dir/$j/$web_conf_dir/dhis.conf | grep url | cut -d '/' -f 4 | sed 's/\r$//'")
 				#TODO remove indicater
 				echo "Indicater 2"
+				echo "db_test = $db_test"				
 				if [[ db_test = $i ]]; then
 					#Time Stamp for starting the Copy of files.
 					timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
