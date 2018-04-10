@@ -144,7 +144,7 @@ SSHErrorCheck () {
 				if [[ $db_test = $i ]]; then
 					#Time Stamp for starting the Copy of files.
 					timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
-					echo "$timeinfo > Copying File From Webserver For : $i ---------------->"
+					echo "$timeinfo > Copying Files From Webserver For : $i ---------------->"
 
 					#copy all the files under the conf folder to the backup dir
 					#TODO remove indicater
@@ -167,7 +167,12 @@ SSHErrorCheck () {
 						echo "j = $j"
 						echo "web_conf_dir = $web_conf_dir"
 						echo "web_dir/j/webapps/w = $web_dir/$j/webapps/$w"
-						ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
+						if [[ ssh -p $web_port $web_use@$web_ip '[ -d $web_dir$j/webapps/$w ]' ]]; then
+							echo "Indicater 7"
+							echo "$timeinfo > Collecting information about unpacked war $w from web server : $i ---------------->"
+							ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" > $backup_dir/$i-ddb-$dayinfo/$w.info
+						fi
+						#ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
 					done
 					#collect information about the folders currently in the webapps
 					web_copy_flag=1
