@@ -146,7 +146,7 @@ SSHErrorCheck () {
 				echo "Indicater 2"
 				echo "db_test = $db_test"
 				echo "i = $i"
-				if [[ db_test = $i ]]; then
+				if [[ $db_test = $i ]]; then
 					#Time Stamp for starting the Copy of files.
 					timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 					echo "$timeinfo > Copying File From Webserver For : $i ---------------->"
