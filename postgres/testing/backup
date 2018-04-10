@@ -134,12 +134,7 @@ SSHErrorCheck () {
 				#	we are currently backing up.
 				#TODO remove indicater
 				echo "Indicater 1"
-				echo "web_port = $web_port"
-				echo "web_user = $web_user"
-				echo "web_ip = $web_ip"
-				echo "web_dir = $web_dir"
-				echo "j = $j"
-				echo "web_conf_dir = $web_conf_dir"
+
 
 				db_test=$(ssh -p $web_port $web_user@$web_ip "cat $web_dir/$j/$web_conf_dir/dhis.conf | grep url | cut -d '/' -f 4 | sed 's/\r$//'")
 				#TODO remove indicater
@@ -164,7 +159,15 @@ SSHErrorCheck () {
 					for w in $webapps; do
 						#TODO remove indicater
 						echo "Indicater 6"
-						ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$nat_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
+						echo "w = $w"
+						echo "web_port = $web_port"
+						echo "web_user = $web_user"
+						echo "web_ip = $web_ip"
+						echo "web_dir = $web_dir"
+						echo "j = $j"
+						echo "web_conf_dir = $web_conf_dir"
+						echo "web_dir/j/webapps/w = $web_dir/$j/webapps/$w"
+						ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
 					done
 					#collect information about the folders currently in the webapps
 					web_copy_flag=1
