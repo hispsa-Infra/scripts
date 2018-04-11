@@ -155,7 +155,7 @@ SSHErrorCheck () {
 					#	- unzip -q -p webapps/ROOT/WEB-INF/lib/dhis-service-core-2.*.jar build.properties
 					#TODO remove indicater
 					echo "Indicater 5"
-					webapps=$(ssh -p $web_port $web_user@$web_ip	"ls $web_dir/$j/webapps/")
+					webapps=$(ssh -p $web_port $web_user@$web_ip "ls $web_dir/$j/webapps/")
 					for w in $webapps; do
 						#TODO remove indicater
 						echo "Indicater 6"
@@ -167,10 +167,10 @@ SSHErrorCheck () {
 						echo "j = $j"
 						echo "web_conf_dir = $web_conf_dir"
 						echo "web_dir/j/webapps/w = $web_dir/$j/webapps/$w"
-						if [[ ssh -p $web_port $web_use@$web_ip '[ -d $web_dir$j/webapps/$w ]' ]]; then
+						if [[ $(ssh -p $web_port $web_use@$web_ip '[ -d $web_dir$j/webapps/$w ]') ]]; then
 							echo "Indicater 7"
 							echo "$timeinfo > Collecting information about unpacked war $w from web server : $i ---------------->"
-							ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" > $backup_dir/$i-ddb-$dayinfo/$w.info
+							ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir$j/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" > $backup_dir/$i-ddb-$dayinfo/$w.info
 						fi
 						#ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
 					done
