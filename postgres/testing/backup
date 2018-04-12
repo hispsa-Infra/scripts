@@ -124,7 +124,7 @@ SSHErrorCheck () {
 			web_ip=$(cat $pg_hba | grep $i | cut -f 5 | cut -f 1 -d '/')
 
 			#TODO get tomcat id - look in the /tomcat folder look at dhis.conf
-			instances=$(ssh -p $web_port $web_user@$web_ip	"ls $web_dir | grep -v *.war")
+			instances=$(ssh -p $web_port $web_user@$web_ip	"ls $web_dir ")
 			SSHErrorCheck $?
 
 			#Move through all the isntances on the webserver and locate the tomcat -
@@ -155,7 +155,7 @@ SSHErrorCheck () {
 					#	- unzip -q -p webapps/ROOT/WEB-INF/lib/dhis-service-core-2.*.jar build.properties
 					#TODO remove indicater
 					echo "Indicater 5"
-					webapps=$(ssh -p $web_port $web_user@$web_ip "ls $web_dir/$j/webapps/")
+					webapps=$(ssh -p $web_port $web_user@$web_ip "ls $web_dir/$j/webapps/ | grep -v *.war")
 					for w in $webapps; do
 						#TODO remove indicater
 						echo "Indicater 6"
