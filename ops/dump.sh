@@ -40,7 +40,7 @@ else
   #Move though all the databases to ensure that the one requested exsists.
   #flag for error if db does exist
   flag_db_exsists=0
-  for d in databases; do
+  for d in $databases; do
 
     if [[ $1 = $d ]]; then
       #DB found update flag_db_exsists
