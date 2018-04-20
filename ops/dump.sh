@@ -32,7 +32,7 @@ if [ $# -ne 1 ] ; then
   echo "Please ensure to Use one of the following database as a argument for the command"
   echo "i.e. bash.sh <one of the following databases>"
   #Move though all the database listing them all
-  for d in databases; do
+  for d in $databases; do
     #Printing out all the databases on the system.
     echo $d
   done
@@ -41,7 +41,7 @@ else
   #flag for error if db does exist
   flag_db_exsists=0
   for d in databases; do
-    
+
     if [[ $1 = $d ]]; then
       #DB found update flag_db_exsists
       flag_db_exsists=1
