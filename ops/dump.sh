@@ -54,7 +54,7 @@ else
       #inform user of dump being finished.
       echo "dump for $1 completed. You can find it at $backup_dir. other useful commands are :"
       echo "Zipping it :"
-      echo "7z a -mx=1 $backup_dir.zip $backup_dir"
+      echo "7z a -mx=1 $backup_dir.7z $backup_dir"
     fi
   done
   #error if flag_db_exsists is 0
