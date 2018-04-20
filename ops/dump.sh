@@ -45,17 +45,28 @@ else
     if [[ $1 = $d ]]; then
       #DB found update flag_db_exsists
       flag_db_exsists=1
+
+      #echo the good news
+      echo "database found! - making backup too $backup_dir"
       #Do dump.
       /usr/bin/pg_dump --jobs=5 --exclude-table=analytics* --format=directory --file=$backup_dir $1
+
+      #inform user of dump being finished.
+      echo "dump for $1 completed. You can find it at $backup_dir. other useful commands are :"
+      echo "Zipping it :"
+      echo "7z a -mx=1 $backup_dir.zip $backup_dir"
     fi
   done
   #error if flag_db_exsists is 0
   if [[ $flag_db_exsists = 0 ]]; then
     #Error Message
-    echo "$1 was not found."
+    echo "$1 database was not found."
+    echo "Please ensure to Use one of the following database as a argument for the command"
+    echo "i.e. bash.sh <one of the following databases>"
+    #Move though all the database listing them all
+    for d in $databases; do
+      #Printing out all the databases on the system.
+      echo $d
+    done
   fi
 fi
-
-
-
-echo $backup_dir
