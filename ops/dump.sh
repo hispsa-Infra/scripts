@@ -55,7 +55,7 @@ elif [[ $1 = 'all' ]]; then
   #copy the dump to the dump server.
   timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
   echo "$timeinfo > ** Compressing Completed - Moveing File **"
-  scp -P 722 $all_backup_dir.7z dump@10.0.1.245
+  scp -P 722 $all_backup_dir.7z dump@10.0.1.245:/home/dump/
 
   #closeing out
   timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
