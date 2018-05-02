@@ -45,7 +45,7 @@ elif [[ $1 = 'all' ]]; then
     #backuping up all the databases on the system.
     echo "database $d - making dump too $all_backup_dir/$d"
     #Do dump.
-    /usr/bin/pg_dump --jobs=5 --exclude-table=analytics* --format=directory --file=$backup_dir/$d $d
+    /usr/bin/pg_dump --jobs=5 --exclude-table=analytics* --format=directory --file=$all_backup_dir/$d $d
   done
   #compressing the file
   timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
