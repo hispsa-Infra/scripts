@@ -20,9 +20,6 @@ backup_dir="/tmp"
 #start of backup info
 dateinfo=`date '+%Y-%m-%d'`
 
-#backup folder
-backup_dir="$backup_dir/$1-$dateinfo-dump"
-
 #Get all datbases not owned by postgres
 databases=`psql --tuples-only -P format=unaligned -c "SELECT datname FROM pg_database WHERE NOT datistemplate AND datname <> 'postgres'";`
 
@@ -36,10 +33,31 @@ if [ $# -ne 1 ] ; then
     #Printing out all the databases on the system.
     echo $d
   done
+  #Check for the keyword all
+elif [[ $1 = 'all' ]]; then
+  #make the new backup dir.
+  all_backup_dir="$backup_dir/$HOSTNAME-$dateinfo-dump"
+  touch $all_backup_dir
+  #Move though all the database dumping them all
+  for d in $databases; do
+    #backuping up all the databases on the system.
+    echo "database $d - making dump too $all_backup_dir/$d"
+    #Do dump.
+    /usr/bin/pg_dump --jobs=5 --exclude-table=analytics* --format=directory --file=$backup_dir/$d $d
+  done
+  #compressing the file
+  echo "dump completed - compressing file"
+  7z a -mx=1 $all_backup_dir.7z $all_backup_dir
+
+  #closeing out
+  echo "dump of $1 completed - can be found at $all_backup_dir.7z"
 else
   #Move though all the databases to ensure that the one requested exsists.
   #flag for error if db does exist
   flag_db_exsists=0
+
+  #backup folder
+  backup_dir="$backup_dir/$1-$dateinfo-dump"
   for d in $databases; do
 
     if [[ $1 = $d ]]; then
@@ -47,14 +65,16 @@ else
       flag_db_exsists=1
 
       #echo the good news
-      echo "database found! - making backup too $backup_dir"
+      echo "database found! - making dump too $backup_dir"
       #Do dump.
       /usr/bin/pg_dump --jobs=5 --exclude-table=analytics* --format=directory --file=$backup_dir $1
 
-      #inform user of dump being finished.
-      echo "dump for $1 completed. You can find it at $backup_dir. other useful commands are :"
-      echo "Zipping it :"
-      echo "7z a -mx=1 $backup_dir.7z $backup_dir"
+      #compressing the file
+      echo "dump completed - compressing file"
+      7z a -mx=1 $backup_dir.7z $backup_dir
+
+      #closeing out
+      echo "dump of $1 completed - can be found at $backup_dir.7z"
     fi
   done
   #error if flag_db_exsists is 0
