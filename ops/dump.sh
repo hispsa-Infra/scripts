@@ -37,7 +37,7 @@ if [ $# -ne 1 ] ; then
 elif [[ $1 = 'all' ]]; then
   #make the new backup dir.
   all_backup_dir="$backup_dir/$HOSTNAME-$dateinfo-dump"
-  touch $all_backup_dir
+  mkdir $all_backup_dir
   timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
   echo "$timeinfo > ** Starting Dump of databases **"
   #Move though all the database dumping them all
