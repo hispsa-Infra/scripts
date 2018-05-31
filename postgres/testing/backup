@@ -1,0 +1,257 @@
+#!/bin/bash
+#_   _ _____ ___________   _____  ___
+#| | | |_   _/  ___| ___ \ /  ___|/ _ \
+#| |_| | | | \ `--.| |_/ / \ `--./ /_\ \
+#|  _  | | |  `--. \  __/   `--. \  _  |
+#| | | |_| |_/\__/ / |     /\__/ / | | |
+#\_| |_/\___/\____/\_|     \____/\_| |_/
+#Backup all the databases on the current postgres system find there -
+#	corrisponding webservers and bakcup the relavent files there and push them to
+#	the backup server
+#Author	: Renier Rousseau
+#Created Date 	: March 2018
+
+#Pull Parameters from the .conf file
+source ~/backup.conf
+
+#TODO add exculde list
+#TODO work all of the steps into one for loop
+#TODO add error check for the scp
+
+##Functions
+# 7zip Error Checking
+7zipErrorCheck () {
+	case "$1" in
+		#Exit without Error
+		0)
+			echo "7zip : Zip Successful"
+		;;
+		#Exit with Error
+		1)
+			echo "ERROR : 7zip : Non Fatal Error - Not all files where accessable."
+		;;
+		#Exit with Fatel Error
+		2)
+			echo "ERROR : 7zip : Fatal error"
+		;;
+		#Exit with Syntax Error
+		7)
+			echo "ERROR : 7zip : Syntax Error"
+		;;
+		#Exit with Memory Error
+		8)
+			echo "ERROR : 7zip : Not Enough Memory For Operation"
+		;;
+		#Exit with User Intervention
+		255)
+			echo "ERROR : 7zip : User stopped the process"
+		;;
+	esac
+}
+# SSH Error Checking
+SSHErrorCheck () {
+	case "$1" in
+		#Exit without Error
+		0)
+			echo "SSH : Connection Successful"
+		;;
+		#Exit with Error
+		1)
+			echo "ERROR : SSH : Generic"
+		;;
+		#Exit with Fatel Error
+		2)
+			echo "ERROR : SSH : Connection Failure"
+		;;
+		#Exit with User Intervention
+		255)
+			echo "ERROR : SSH : Connection Refused"
+		;;
+	esac
+}
+
+
+{
+  #Header
+	echo "---------------------------------------------------------------------"
+  echo "      HISP SOUTH AFRICA - Backup Script - Ver 4.0 - March 2018"
+  echo "---------------------------------------------------------------------"
+	echo ""
+
+  #Time Stamping Starting time
+  timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+  echo "$timeinfo > ** Starting Backup of databases **"
+
+  #Time Stamping Starting of Dumps
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timeinfo > Step 1: Starting dump of databases"
+
+  #for each database(i) that is not owned by postgres...
+	for i in $databases; do
+    #Time Stamp for each Database
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo > Database: $i ---------------->"
+
+    #Time Stamp for starting Vacuuming
+    timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo >  - Vacuuming..."
+		/usr/bin/vacuumdb --analyze --quiet $i
+
+    #Time Stamp for starting the dunmp
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Dumping..."
+		/usr/bin/pg_dump --jobs=5 --exclude-table=analytics* --format=directory --file=$backup_dir/$i-ddb-$dayinfo $i
+
+    #Time Stamp for Completion of dump.
+    timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo > Dump: $i Complete <----------------"
+	done
+
+	#Time Stamping the Start of the webservers backup
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timeinfo > Step 2: Starting backup of webserver"
+
+	for i in $databases; do
+		#Time Stamp for each DB's webserver
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo > Database: $i ---------------->"
+
+		#test if the ip for the database is locked at 32 bits
+		if [[ $(cat $pg_hba | grep $i | cut -f 5 | cut -f 2 -d '/') = 32 ]]; then
+			web_copy_flag=0
+
+			#lock in the ip address for the webserver related to the database
+			web_ip=$(cat $pg_hba | grep $i | cut -f 5 | cut -f 1 -d '/')
+
+			#TODO get tomcat id - look in the /tomcat folder look at dhis.conf
+			instances=$(ssh -p $web_port $web_user@$web_ip	"ls $web_dir ")
+			SSHErrorCheck $?
+
+			#Move through all the isntances on the webserver and locate the tomcat -
+			#	linked to this database
+			for j in $instances; do
+				#get the information about the instance database and compare to the db -
+				#	we are currently backing up.
+
+				db_test=$(ssh -p $web_port $web_user@$web_ip "cat $web_dir/$j/$web_conf_dir/dhis.conf | grep url | cut -d '/' -f 4 | sed 's/\r$//'")
+				if [[ $db_test = $i ]]; then
+					#Time Stamp for starting the Copy of files.
+					timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+					echo "$timeinfo > Copying Files From Webserver For : $i ---------------->"
+
+					#copy all the files under the conf folder to the backup dir
+					scp -r -P $web_port $web_user@$web_ip:$web_dir/$j/$web_conf_dir/ $backup_dir/$i-ddb-$dayinfo/
+
+					webapps=$(ssh -p $web_port $web_user@$web_ip "ls $web_dir/$j/webapps/ | grep -v *.war")
+					for w in $webapps; do
+<<<<<<< HEAD
+<<<<<<< HEAD
+						#TODO remove indicater
+						echo "Indicater 6"
+						echo "w = $w"
+						echo "web_port = $web_port"
+						echo "web_user = $web_user"
+						echo "web_ip = $web_ip"
+						echo "web_dir = $web_dir"
+						echo "j = $j"
+						echo "web_conf_dir = $web_conf_dir"
+						echo "web_dir/j/webapps/w = $web_dir/$j/webapps/$w"
+						if [[ ssh -p $web_port $web_use@$web_ip '[ -d $web_dir$j/webapps/$w ]' ]]; then
+							echo "Indicater 7"
+							echo "$timeinfo > Collecting information about unpacked war $w from web server : $i ---------------->"
+							ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir$j/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" > $backup_dir/$i-ddb-$dayinfo/$w.info
+						fi
+=======
+=======
+						#Addeding a sleep to not over load the ssh connection.
+						sleep 1m
+
+						#adding Time stamp fo r the connection for the war version.
+						echo "$timeinfo > Collecting information about unpacked war $w from web server : $i ---------------->"
+						ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir$j/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" > $backup_dir/$i-ddb-$dayinfo/$w.info
+<<<<<<< HEAD
+=======
+>>>>>>> ce518e3d763bff7c5151c860e4e2f8d4ff6cfc5e
+						#ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
+					done
+					#collect information about the folders currently in the webapps
+					web_copy_flag=1
+
+					#Time Stamp for Ending the Copy of files.
+					timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+					echo "$timeinfo > Copying File From Webserver For : $i <----------------"
+				fi
+
+			done
+
+		else
+			#Error Message if the PG_HBA entery is not 32 bit locked
+			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+			echo "$timeinfo > ERROR : $i PG_HBA Entery not locked at 32 bit."
+		fi
+		webserver_ip=$(cat $pg_hba | grep $i | cut -f 5 | cut -f 1 -d '/')
+
+		#Time Stamp for Completion of backup.
+    timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo > Dump: $i Complete <----------------"
+
+	done
+
+  #Starting the Packaging and encryption
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timeinfo > Step 3: Starting pack/encryption and Uploading of databases"
+
+  #for each database(i) that is not owned by postgres...
+	for i in $databases; do
+    #time stamp for start of encryption
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Pack/encrypting $i ---------------->"
+		#Zipping the files passed.
+		7z a -mx=1 -p$encrypt_key $backup_dir/$i-ddb-$dayinfo.7z $backup_dir/$i-ddb-$dayinfo > /dev/null
+		7zipErrorCheck $?
+
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Uploading: $i ---------------->"
+		scp -P $remote_port $backup_dir/$i-ddb-$dayinfo.7z $remote_user@$remote_ip:$remote_dir
+
+    #if its the weekly backup key day then do weekly backup
+		if [ "$dayinfo" == $weekly_backup ]; then
+      #Time stamp for packing weekly backup
+      timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+      echo "$timeinfo >  - (Weekly) Pack/encrypt..."
+      7z a -mx=1 -p$encrypt_key $backup_dir/$i-wdb-Week$weekinfo.7z $backup_dir/$i-ddb-$dayinfo > /dev/null
+			7zipErrorCheck $?
+
+			timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+			echo "$timeinfo >  - (Weekly) Uploading -> Disaster Recovery Server..."
+			scp -P $remote_port $backup_dir/$i-wdb-Week$weekinfo.7z $remote_user@$remote_ip:$remote_dir
+		fi
+
+    #Time Stamp closing the Packaging
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "$timeinfo > Pack: $i Complete <----------------"
+	done
+
+  #Cleapup
+  #Time Stamp start of Cleanup
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timeinfo > Step 4: Clean Up"
+  #for each database(i) that is not owned by postgres...
+	for i in $databases; do
+    #TODO move this too a clean up Step
+    #removing uploaded database
+		rm $backup_dir/$i-?db-*.*
+    rm -R $backup_dir/$i-?db-*
+    echo ""
+    sleep 3
+	done
+  #Time stamp closing message
+	timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+	echo "$timedateinfo > ** Complete Clean Up **"
+	echo "$timedateinfo > ---------------------------------------------------------------------"
+} 2>&1 | tee $logfile
+
+#Cleanup
+gzip -9 $logfile
+scp -P $remote_port $logfile.gz $remote_user@$remote_ip:$remote_dir
+rm $logfile.gz

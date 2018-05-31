@@ -55,16 +55,18 @@ shift $(( $OPTIND-1 ))
 
 #Updating the Skel file to edit the bashrc of the User we are about to add
 #Adding a network audit to bashrc
-sudo sh -c "echo 'echo Network' >> /etc/skel/.bashrc "
+sudo sh -c "echo 'echo --- Network ---' >> /etc/skel/.bashrc "
 sudo sh -c "echo 'netstat -ntl' >> /etc/skel/.bashrc "
 #Adding a space check to bashrc
-sudo sh -c "echo 'echo Harddrive' >> /etc/skel/.bashrc "
+sudo sh -c "echo 'echo --- Harddrive ---' >> /etc/skel/.bashrc "
 sudo sh -c "echo 'df -h /' >> /etc/skel/.bashrc "
 #Adding a Memory usage check to bashrc
-sudo sh -c "echo 'echo Memory' >> /etc/skel/.bashrc "
+sudo sh -c "echo 'echo --- Memory ---' >> /etc/skel/.bashrc "
 sudo sh -c "echo 'free -h' >> /etc/skel/.bashrc "
 #check for the passwd.txt file one startup and propt the content and a passwd update
 sudo sh -c "echo '[ -e ~/passwd.txt ] && cat passwd.txt && passwd && rm -f passwd.txt ' >> /etc/skel/.bashrc "
+#Change to the right home directory
+sudo sh -c "echo 'cd' >> /etc/skel/.bashrc "
 
 
 #The users will be added according to the folders in the Directory specified
