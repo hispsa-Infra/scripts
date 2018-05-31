@@ -162,6 +162,7 @@ SSHErrorCheck () {
 							ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir$j/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" > $backup_dir/$i-ddb-$dayinfo/$w.info
 						fi
 =======
+=======
 						#Addeding a sleep to not over load the ssh connection.
 						sleep 1m
 
@@ -169,6 +170,7 @@ SSHErrorCheck () {
 						echo "$timeinfo > Collecting information about unpacked war $w from web server : $i ---------------->"
 						ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir$j/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" > $backup_dir/$i-ddb-$dayinfo/$w.info
 <<<<<<< HEAD
+=======
 >>>>>>> ce518e3d763bff7c5151c860e4e2f8d4ff6cfc5e
 						#ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
 					done
