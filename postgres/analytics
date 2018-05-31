@@ -1,0 +1,46 @@
+#!/bin/bash
+
+prov=$1
+#echo $prov
+#Function to run analytics for the specified province.
+function analytics() {
+    #a=$(curl -u Infra_API:S1mchaTorah+ -X POST https://staging.dhis.dhmis.org/$prov/api/resourceTables/analytics)
+    a=$(curl -insecure -u Infra_API:S1mchaTorah+ -X POST http://staging.dhis.dhmis.org/$prov/api/resourceTables/analytics)
+  #echo $a
+}
+
+#Calls the function analytics.
+analytics $prov
+#a=$?
+#echo "This is the output: $a"
+num=$(echo $a | grep -c OK)
+#echo $num
+
+rm /tmp/analytics_mail.txt
+sender=$(whoami)@$(hostname)
+
+
+if [ $num -gt 0 ]
+then
+cat <<EOT >> /tmp/analytics_mail.txt
+  To: Infra
+  From: $sender
+  Subject: ${prov^^} Analytics
+
+  Analytics for ${prov^^} ran succesfully
+EOT
+  ssmtp thato@hisp.org < /tmp/analytics_mail.txt
+  #echo "$prov Analytics" | ssmtp -s "Analytics for $prov ran succesfully." thato@hisp.org;
+else
+  cat <<EOT >> /tmp/analytics_mail.txt
+  To: Infra
+  From: $sender
+  Subject: ${prov^^} FAILED!
+
+  Analytics for ${prov^^} failed
+
+  $a
+EOT
+    ssmtp thato@hisp.org < /tmp/analytics_mail.txt
+  #echo "$prov FAILED!" | ssmtp -s "Analytics for $prov failed, please investigate and possibly run them manually." thato@hisp.org;
+fi
