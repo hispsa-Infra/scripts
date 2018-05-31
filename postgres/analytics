@@ -1,23 +1,33 @@
 #!/bin/bash
 
-prov=$1
-#echo $prov
+#Set instance and hostname
+inst=$1
+host=$(hostname)
+
+case expression in
+    pattern1 )
+        statements ;;
+    pattern2 )
+        statements ;;
+    ...
+esac
+
 #Function to run analytics for the specified province.
 function analytics() {
-    #a=$(curl -u Infra_API:S1mchaTorah+ -X POST https://staging.dhis.dhmis.org/$prov/api/resourceTables/analytics)
-    a=$(curl -insecure -u Infra_API:S1mchaTorah+ -X POST http://staging.dhis.dhmis.org/$prov/api/resourceTables/analytics)
+    #a=$(curl -u Infra_API:S1mchaTorah+ -X POST https://staging.dhis.dhmis.org/$inst/api/resourceTables/analytics)
+    a=$(curl -insecure -u Infra_API:S1mchaTorah+ -X POST http://staging.dhis.dhmis.org/$inst/api/resourceTables/analytics)
   #echo $a
 }
 
 #Calls the function analytics.
-analytics $prov
+analytics $inst
 #a=$?
 #echo "This is the output: $a"
 num=$(echo $a | grep -c OK)
 #echo $num
 
 rm /tmp/analytics_mail.txt
-sender=$(whoami)@$(hostname)
+sender=$(whoami)@$host
 
 
 if [ $num -gt 0 ]
@@ -25,22 +35,22 @@ then
 cat <<EOT >> /tmp/analytics_mail.txt
   To: Infra
   From: $sender
-  Subject: ${prov^^} Analytics
+  Subject: ${inst^^} Analytics
 
-  Analytics for ${prov^^} ran succesfully
+  Analytics for ${inst^^} ran succesfully
 EOT
   ssmtp thato@hisp.org < /tmp/analytics_mail.txt
-  #echo "$prov Analytics" | ssmtp -s "Analytics for $prov ran succesfully." thato@hisp.org;
+  #echo "$inst Analytics" | ssmtp -s "Analytics for $inst ran succesfully." thato@hisp.org;
 else
   cat <<EOT >> /tmp/analytics_mail.txt
-  To: Infra
-  From: $sender
-  Subject: ${prov^^} FAILED!
+To: Infra
+From: $sender
+Subject: ${inst^^} FAILED!
 
-  Analytics for ${prov^^} failed
+Analytics for ${inst^^} failed
 
-  $a
+$a
 EOT
     ssmtp thato@hisp.org < /tmp/analytics_mail.txt
-  #echo "$prov FAILED!" | ssmtp -s "Analytics for $prov failed, please investigate and possibly run them manually." thato@hisp.org;
+  #echo "$inst FAILED!" | ssmtp -s "Analytics for $inst failed, please investigate and possibly run them manually." thato@hisp.org;
 fi
