@@ -145,6 +145,7 @@ SSHErrorCheck () {
 					webapps=$(ssh -p $web_port $web_user@$web_ip "ls $web_dir/$j/webapps/ | grep -v *.war")
 					for w in $webapps; do
 <<<<<<< HEAD
+<<<<<<< HEAD
 						#TODO remove indicater
 						echo "Indicater 6"
 						echo "w = $w"
@@ -167,6 +168,7 @@ SSHErrorCheck () {
 						#adding Time stamp fo r the connection for the war version.
 						echo "$timeinfo > Collecting information about unpacked war $w from web server : $i ---------------->"
 						ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir$j/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" > $backup_dir/$i-ddb-$dayinfo/$w.info
+<<<<<<< HEAD
 >>>>>>> ce518e3d763bff7c5151c860e4e2f8d4ff6cfc5e
 						#ssh -q -p $web_port $web_use@$web_ip [[ -d $web_dir/$j/webapps/$w ]] && ssh -p $web_port $web_user@$web_ip "unzip -q -p $web_dir/$i/webapps/$w/WEB-INF/lib/dhis-service-core-2.*.jar build.properties" || echo "Pass" > /dev/null;
 					done
