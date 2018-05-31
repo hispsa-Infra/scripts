@@ -9,8 +9,15 @@
 #Author	: Renier Rousseau
 #Created Date 	: November 2017
 
-#Review the .conf file local specified Varriables
-source ~/autoSQL.conf
+#check if there is an arugument if there is use it as the .conf otherwise
+#use the generic location.
+if [ $# -ne 1 ] ; then
+  #read the conf from the comand line.
+  source $1
+else
+  #Review the .conf file local specified Varriables
+  source ~/autoSQL.conf
+fi
 
 {
   #Header
