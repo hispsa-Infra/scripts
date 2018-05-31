@@ -4,13 +4,13 @@
 inst=$1
 host=$(hostname)
 
-case expression in
-    pattern1 )
-        statements ;;
-    pattern2 )
-        statements ;;
-    ...
-esac
+# case expression in
+#     pattern1 )
+#         statements ;;
+#     pattern2 )
+#         statements ;;
+#     ...
+# esac
 
 #Function to run analytics for the specified province.
 function analytics() {
