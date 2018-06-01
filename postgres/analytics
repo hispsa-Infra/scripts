@@ -69,7 +69,14 @@ num=$(echo $output | grep -c OK)
 #echo $num
 
 #Produce output.
-
+if [ $num -gt 0 ]
+then
+	echo "Analytics for $inst ran successfully."
+	echo $output
+else
+	echo "Analytics for $inst failed."
+	echo $output
+fi
 
 
 #mailing option
