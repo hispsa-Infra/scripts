@@ -56,22 +56,19 @@ if [[ $inst = fail ]]; then
   exit 1
 fi
 
-# Function to run analytics for the specified province.
-function analytics() {
-    output=$(curl -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
-    }
+# Run analytics for the specified instance.
+output=$(curl -s -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
 
-#Calls the function analytics.
-analytics
-
+#Num equals the number of times "OK" occurs in the output.
 num=$(echo $output | grep -c OK)
 
 #Produce output.
 if [ $num -gt 0 ]
 then
-	echo "Analytics for $inst ran successfully."
-	echo $output
+	#If num is greater than 1, then the it is assumed to be successful.
+	echo "SUCCESS: Analytics for $inst ran successfully."
 else
-	echo "Analytics for $inst failed."
-	echo $output
+	#Anything less than 1 is assumed to be unsuccsessful.
+	echo "ERROR: Analytics for $inst failed."
 fi
+	
