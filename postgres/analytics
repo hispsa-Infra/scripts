@@ -9,6 +9,8 @@
 #Author	: Thato Mafoko
 #Created Date 	: May 2018
 
+#TODO: Add error checking for html codes.
+
 #Usage Tags for arguments
 usage() {
   echo "Usage: $PROG [options]"
@@ -57,16 +59,12 @@ fi
 # Function to run analytics for the specified province.
 function analytics() {
     output=$(curl -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
-    #a=$(curl -insecure -u Infra_API:S1mchaTorah+ -X POST http://staging.dhis.dhmis.org/$inst/api/resourceTables/analytics)
-    echo $output
-}
+    }
 
 #Calls the function analytics.
-analytics $inst $user $password
-#a=$?
-#echo "This is the output: $a"
+analytics
+
 num=$(echo $output | grep -c OK)
-#echo $num
 
 #Produce output.
 if [ $num -gt 0 ]
@@ -77,34 +75,3 @@ else
 	echo "Analytics for $inst failed."
 	echo $output
 fi
-
-
-#mailing option
-#rm /tmp/analytics_mail.txt
-#sender=$(whoami)@$host
-
-
-#if [ $num -gt 0 ]
-#then
-#cat <<EOT >> /tmp/analytics_mail.txt
-#  To: Infra
-#  From: $sender
-#  Subject: ${inst^^} Analytics
-#
-#  Analytics for ${inst^^} ran succesfully
-#EOT
-#  ssmtp thato@hisp.org < /tmp/analytics_mail.txt
-  #echo "$inst Analytics" | ssmtp -s "Analytics for $inst ran succesfully." thato@hisp.org;
-#else
-#  cat <<EOT >> /tmp/analytics_mail.txt
-#To: Infra
-#From: $sender
-#Subject: ${inst^^} FAILED!
-#
-#Analytics for ${inst^^} failed
-
-#$output
-#EOT
-#    ssmtp thato@hisp.org < /tmp/analytics_mail.txt
-  #echo "$inst FAILED!" | ssmtp -s "Analytics for $inst failed, please investigate and possibly run them manually." thato@hisp.org;
-#fi
