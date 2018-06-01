@@ -23,15 +23,7 @@ user=admin
 password=district
 host=$(hostname)
 
-<<<<<<< HEAD
-# case expression in
-#     pattern1 )
-#         statements ;;
-#     pattern2 )
-#         statements ;;
-#     ...
-# esac
-=======
+
 #While loop to populate varrible
 while getopts ":h:u:p:" opt;
 do
@@ -60,7 +52,6 @@ if [[ $inst = fail ]]; then
   echo "Error target URL not specified"
   exit 1
 fi
->>>>>>> 899712769616b82d0a37802b7831910df049dab5
 
 # Function to run analytics for the specified province.
 function analytics() {
