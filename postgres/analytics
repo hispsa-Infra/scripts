@@ -9,9 +9,21 @@
 #Author	: Thato Mafoko
 #Created Date 	: May 2018
 
+#Usage Tags for arguments
+usage() {
+  echo "Usage: $PROG [options]"
+  echo " -h     Target host url i.e. www.example.org/dhis2 - Mandatory"
+  echo " -u     User Name (Default admin)"
+  echo " -p     User Password (Default district)"
+}
 
+#Default Vaules
+inst=fail
+user=admin
+password=district
 host=$(hostname)
 
+<<<<<<< HEAD
 # case expression in
 #     pattern1 )
 #         statements ;;
@@ -19,20 +31,81 @@ host=$(hostname)
 #         statements ;;
 #     ...
 # esac
+=======
+#While loop to populate varrible
+while getopts ":h:u:p:" opt;
+do
+  case $opt in
+    h)
+      inst=$OPTARG;
+      ;;
+    u)
+      user=$OPTARG;
+      ;;
+    p)
+      password=$OPTARG;
+      ;;
+    \?)
+      echo "Invalid option -$opt" >&2
+      exit 1;
+      ;;
+    :)
+      echo "Option -$opt requires an argument." >&2
+      exit 1
+  esac
+done
+
+#Close if no host is specified
+if [[ $inst = fail ]]; then
+  echo "Error target URL not specified"
+  exit 1
+fi
+>>>>>>> 899712769616b82d0a37802b7831910df049dab5
 
 # Function to run analytics for the specified province.
 function analytics() {
+    output=$(curl -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
+    #a=$(curl -insecure -u Infra_API:S1mchaTorah+ -X POST http://staging.dhis.dhmis.org/$inst/api/resourceTables/analytics)
+    echo $output
 }
 
 #Calls the function analytics.
+analytics $inst $user $password
 #a=$?
 #echo "This is the output: $a"
 num=$(echo $output | grep -c OK)
 #echo $num
 
+#Produce output.
 
 
 
+#mailing option
+#rm /tmp/analytics_mail.txt
+#sender=$(whoami)@$host
 
 
+#if [ $num -gt 0 ]
+#then
+#cat <<EOT >> /tmp/analytics_mail.txt
+#  To: Infra
+#  From: $sender
+#  Subject: ${inst^^} Analytics
+#
+#  Analytics for ${inst^^} ran succesfully
+#EOT
+#  ssmtp thato@hisp.org < /tmp/analytics_mail.txt
+  #echo "$inst Analytics" | ssmtp -s "Analytics for $inst ran succesfully." thato@hisp.org;
+#else
+#  cat <<EOT >> /tmp/analytics_mail.txt
+#To: Infra
+#From: $sender
+#Subject: ${inst^^} FAILED!
+#
+#Analytics for ${inst^^} failed
+
+#$output
+#EOT
+#    ssmtp thato@hisp.org < /tmp/analytics_mail.txt
   #echo "$inst FAILED!" | ssmtp -s "Analytics for $inst failed, please investigate and possibly run them manually." thato@hisp.org;
+#fi
