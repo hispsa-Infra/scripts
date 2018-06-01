@@ -1,4 +1,17 @@
 #!/bin/bash
+#_   _ _____ ___________   _____  ___
+#| | | |_   _/  ___| ___ \ /  ___|/ _ \
+#| |_| | | | \ `--.| |_/ / \ `--./ /_\ \
+#|  _  | | |  `--. \  __/   `--. \  _  |
+#| | | |_| |_/\__/ / |     /\__/ / | | |
+#\_| |_/\___/\____/\_|     \____/\_| |_/
+#Runs Analytics for dhis2 remotely.
+#Author	: Thato Mafoko
+#Created Date 	: May 2018
+
+#Varrialbes
+
+
 
 #Set instance and hostname
 inst=$1
