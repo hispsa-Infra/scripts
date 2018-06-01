@@ -50,6 +50,7 @@ done
 #Close if no host is specified
 if [[ $inst = fail ]]; then
   echo "Error target URL not specified"
+  usage()
   exit 1
 fi
 
