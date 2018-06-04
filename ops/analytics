@@ -69,6 +69,9 @@ then
 	echo "SUCCESS: Analytics for $inst ran successfully."
 else
 	#Anything less than 1 is assumed to be unsuccsessful.
-	echo "ERROR: Analytics for $inst failed."
+	echo "ERROR: Analytics for $inst failed.
+	
+	$output"
+	
 fi
 	
