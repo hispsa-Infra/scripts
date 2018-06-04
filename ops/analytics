@@ -60,7 +60,7 @@ fi
 output=$(curl -s -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
 
 #Num equals the number of times "OK" occurs in the output.
-num=$(echo $output | grep -c OK)
+num=$(echo $output | grep -c '"status":"OK","message":"Initiated analytics')
 
 #Produce output.
 if [ $num -gt 0 ]
