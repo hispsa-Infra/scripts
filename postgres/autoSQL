@@ -13,7 +13,8 @@
 #use the generic location.
 if [ $# -ne 1 ] ; then
   #read the conf from the comand line.
-  source $1
+  #source $1
+  source ~/autoSQL.conf
 else
   #Review the .conf file local specified Varriables
   source ~/autoSQL.conf
