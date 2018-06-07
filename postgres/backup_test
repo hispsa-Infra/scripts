@@ -37,10 +37,12 @@ while getopts ":a:h:" opt;
 do
   case $opt in
     a)
-      all_flag=1;
+    echo "a - Triggered"
+      #all_flag=1;
       ;;
     h)
-      usage;
+      echo "h - Triggered"
+      #usage;
       ;;
     \?)
       usage;
