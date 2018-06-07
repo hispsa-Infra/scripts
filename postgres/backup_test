@@ -1,0 +1,27 @@
+#!/bin/bash
+#_   _ _____ ___________   _____  ___
+#| | | |_   _/  ___| ___ \ /  ___|/ _ \
+#| |_| | | | \ `--.| |_/ / \ `--./ /_\ \
+#|  _  | | |  `--. \  __/   `--. \  _  |
+#| | | |_| |_/\__/ / |     /\__/ / | | |
+#\_| |_/\___/\____/\_|     \____/\_| |_/
+#Author	: Renier Rousseau
+#Created Date 	: June 2018
+#"Usage: the script is designed to called from a (or the existing) backup script,
+# so as to test and verify the backup that has just taken place, and/or to be
+# called standalone to test a particular backup file - in either case, the
+# script is called and passed a variable of the backup file absolute path.
+# If no variable or filename is passed, then the script will build a tree
+# of the current location, and all subfolders, and begin iterating through
+# all found backup files and testing each one.
+# As it works, it logs the process as it goes, to the /tmp folder..."
+
+#Syntax: backup_test [optional switches] backupfilename
+
+#TODO Usage
+#TODO Test usage
+#TODO Pull information from backup.conf
+#TODO Test Pull from backup.conf
+#TODO - Unzip backup file and all contents into the /tmp folder
+#TODO - Create temp database, upload the backup data into it.
+#TODO - Cleanup
