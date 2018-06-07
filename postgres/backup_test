@@ -25,6 +25,8 @@ usage() {
   echo "Usage: $PROG [options] <filename>"
   echo " -a --all : All file and folders in the current folder.( $(pwd) )"
   echo " -h --help : Print this Message."
+
+  exit
 }
 
 #Varriables
@@ -35,16 +37,13 @@ while getopts ":a:h:" opt;
 do
   case $opt in
     a)
-      sys_ram=$OPTARG;
+      all_flag=1;      
       ;;
     h)
       usage;
-      exit 1;
       ;;
     \?)
-      echo "Invalid option -$opt" >&2
       usage;
-      exit 1;
       ;;
   esac
 done
