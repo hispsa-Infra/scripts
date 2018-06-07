@@ -49,7 +49,7 @@ while [ "$1" != "" ]; do
     exit
     ;;
     * )
-    if [[ $dir_flag = 0 && $file_flag = 0]]; then
+    if [[ $dir_flag == 0 && $file_flag == 0]]; then
       #test if $1 is a file
       if [[ -f "$1" ]]
       then
@@ -66,10 +66,10 @@ while [ "$1" != "" ]; do
         usage
       fi
     else
-      if [[ $dir_flag = 1 ]]; then
+      if [[ $dir_flag == 1 ]]; then
         echo "The folder $dir_name has already been listed for testing"
         echo " currently there is not support for multiple folders"
-      elif [[ $file_flag = 1 ]]; then
+      elif [[ $file_flag == 1 ]]; then
         echo "The file $file_name has already been listed for testing "
         echo " currently there is not support for listing multiple files "
         echo " you can how ever specify the folder if both files lie in the"
