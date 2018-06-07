@@ -22,15 +22,21 @@
 #Functions
 #TODO Usage
 usage() {
-  echo "Usage: backup_test [options] <filename>"
+  echo "Usage: backup_test [options] <file/folder name>"
   echo " -a --all : All file and folders in the current folder.( $(pwd) )"
   echo " -h --help : Print this Message."
-
+  echo " If there is no options or file/folder passed the current content "
+  echo "  of this folder will be tested."
   exit 1
 }
 
 #Varriables
 all_flag=0
+dir_flag=0
+dir_name=''
+file_flag=0
+file_name=''
+
 
 #while loop for Usage
 while [ "$1" != "" ]; do
@@ -40,11 +46,36 @@ while [ "$1" != "" ]; do
     ;;
     -h | --help )
       usage
-      exit
+    exit
     ;;
     * )
-      echo $1
-      exit 1
+    if [[ $dir_flag = 0 && $file_flag = 0]]; then
+      #test if $1 is a file
+      if [[ -f "$1" ]]
+      then
+        echo "file $1 found."
+        file_flag=1
+        file_name=$1
+      #test if $1 is a direcory
+      elif [[ -d "$1" ]]; then
+        echo "folder $1 found."
+        dir_flag=1
+        dir_name=$1
+      else
+        echo "File/Folder $1 not found."
+        usage
+      fi
+    else
+      if [[ $dir_flag = 1 ]]; then
+        echo "The folder $dir_name has already been listed for testing"
+        echo " currently there is not support for multiple folders"
+      elif [[ $file_flag = 1 ]]; then
+        echo "The file $file_name has already been listed for testing "
+        echo " currently there is not support for listing multiple files "
+        echo " you can how ever specify the folder if both files lie in the"
+        echo " same folder. i.e /path/to"
+      fi
+    fi
   esac
   shift
 done
