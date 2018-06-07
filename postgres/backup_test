@@ -18,9 +18,9 @@
 
 #Syntax: backup_test [optional switches] backupfilename
 
+#TODO add a option to specify the backup.conf file.
 
 #Functions
-#TODO Usage
 usage() {
   echo "Usage: backup_test [options] <file/folder name>"
   echo " -a --all : All file and folders in the current folder.( $(pwd) )"
@@ -31,11 +31,18 @@ usage() {
 }
 
 #Varriables
+## Flags and arguments
 all_flag=0
 dir_flag=0
 dir_name=''
 file_flag=0
 file_name=''
+
+## System Variables
+### backup config file
+conf_file="~/backup.conf"
+conf_file_flag=0
+
 
 #while loop for Usage
 while [ "$1" != "" ]; do
@@ -78,13 +85,21 @@ while [ "$1" != "" ]; do
   shift
 done
 
+#catch all if no folder/file was specifed
 if [[ $dir_flag == 0 && $file_flag == 0 ]]; then
   dir_flag=1
   dir_name=$(pwd)
   echo "Folder $dir_name will be tested."
 fi
 
-#TODO Test usage
+if [[ -f "$conf_file" ]]; then
+  #if we find the $conf_file
+  source $conf_file
+  conf_file_flag=1
+else
+  echo "Error : Config file $conf_file was not found."
+fi
+
 #TODO Pull information from backup.conf
 #TODO Test Pull from backup.conf
 #TODO - Unzip backup file and all contents into the /tmp folder
