@@ -22,11 +22,11 @@
 #Functions
 #TODO Usage
 usage() {
-  echo "Usage: $PROG [options] <filename>"
+  echo "Usage: backup_test [options] <filename>"
   echo " -a --all : All file and folders in the current folder.( $(pwd) )"
   echo " -h --help : Print this Message."
 
-  exit
+  exit 1
 }
 
 #Varriables
@@ -37,7 +37,7 @@ while getopts ":a:h:" opt;
 do
   case $opt in
     a)
-      all_flag=1;      
+      all_flag=1;
       ;;
     h)
       usage;
@@ -45,6 +45,8 @@ do
     \?)
       usage;
       ;;
+    :)
+      usage
   esac
 done
 
