@@ -20,8 +20,11 @@
 
 #TODO add a option to specify the backup.conf file.
 #TODO add a check on the backup.conf file lookup.
+#TODO allow testing for the folder that pg_dump -Fd creates
+#TODO allow for SQL files to be passed.
 
 #Functions
+## Usage
 usage() {
   echo "Usage: backup_test [options] <file/folder name>"
   echo " -a --all : All file and folders in the current folder.( $(pwd) )"
@@ -29,6 +32,18 @@ usage() {
   echo " If there is no options or file/folder passed the current content "
   echo "  of this folder will be tested."
   exit 1
+}
+##Test file
+backupTest () {
+  #Test if there is a Parameter and if its a file.
+  if [[ -f $1 ]]; then
+    file_type=$(file -0 $1 | cut -d ' ' -f 2)
+    echo "file type = $file_type"
+
+  else
+    echo "Error : Invalid Parrter pased to backupTest Function - "
+    echo " Parameter = $1"
+  fi
 }
 
 #Varriables
@@ -104,11 +119,13 @@ test_dir="/tmp/.db_test_$dateinfo"
 mkdir $test_dir
 
 #Testing for file
-if [[ file_flag == 1 ]]; then
+if [[ $file_flag == 1 ]]; then
   #working with that specific files
   echo "File"
   echo "File name = $file_name"
-elif [[ dir_flag == 1 ]]; then
+  backupTest $file_name
+  
+elif [[ $dir_flag == 1 ]]; then
   #working with that specific files
   echo "Folder"
   echo "Folder name = $dir_name"
