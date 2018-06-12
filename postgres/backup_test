@@ -19,6 +19,7 @@
 #Syntax: backup_test [optional switches] backupfilename
 
 #TODO add a option to specify the backup.conf file.
+#TODO add a check on the backup.conf file lookup.
 
 #Functions
 usage() {
@@ -100,8 +101,24 @@ else
   echo "Error : Config file $conf_file was not found."
 fi
 
-#TODO Pull information from backup.conf
-#TODO Test Pull from backup.conf
+source ~/backup.conf
+
+echo "backup_dir = $backup_dir"
+
+#start of backup info
+echo "dayinfo = $dayinfo"
+echo "weekinfo = $weekinfo"
+echo "dateinfo = $dateinfo"
+
+#logfile
+echo "logfile = $logfile"
+
+#encryption
+echo "encrypt_key = $encrypt_key"
+
+#When to do a weekly backup
+echo "weekly_backup = $weekly_backup "
+
 #TODO - Unzip backup file and all contents into the /tmp folder
 #TODO - Create temp database, upload the backup data into it.
 #TODO - Cleanup

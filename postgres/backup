@@ -13,6 +13,9 @@
 #Pull Parameters from the .conf file
 source ~/backup.conf
 
+#Create log file.
+touch $logfile
+
 {
   #Header
 	echo "---------------------------------------------------------------------"
