@@ -62,6 +62,13 @@ touch $logfile
 		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 		echo "$timeinfo >  - Pack/encrypting $i ---------------->"
 		7z a -mx=1 -p$encrypt_key $backup_dir/$i-ddb-$dayinfo.7z $backup_dir/$i-ddb-$dayinfo
+
+		#testing backups
+		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+		echo "$timeinfo >  - Testing backup for : $i ---------------->"
+		bash /home/hisp/scripts/postgres/backup_test $backup_dir/$i-ddb-$dayinfo.7z
+
+		#Uploading
 		timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
 		echo "$timeinfo >  - Uploading: $i ---------------->"
 		scp -P $remote_port $backup_dir/$i-ddb-$dayinfo.7z $remote_user@$remote_ip:$remote_dir
