@@ -37,8 +37,18 @@ usage() {
 backupTest () {
   #Test if there is a Parameter and if its a file.
   if [[ -f $1 ]]; then
+    #Test what kind of file is being passed
     file_type=$(file -0 $1 | cut -d ' ' -f 2)
     echo "file type = $file_type"
+    if [[ $file_type == "7-zip" ]]; then
+      #tested true for 7-zip file.
+      echo "True for 7-zip"
+    elif [[ $file_type == "gzip" ]]; then
+      #tested true for gzip file.
+      echo "Ture for gzip"
+    else
+      echo "Error : File type not expected."
+    fi
 
   else
     echo "Error : Invalid Parrter pased to backupTest Function - "
@@ -124,7 +134,7 @@ if [[ $file_flag == 1 ]]; then
   echo "File"
   echo "File name = $file_name"
   backupTest $file_name
-  
+
 elif [[ $dir_flag == 1 ]]; then
   #working with that specific files
   echo "Folder"
