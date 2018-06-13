@@ -22,6 +22,7 @@
 #TODO add a check on the backup.conf file lookup.
 #TODO allow testing for the folder that pg_dump -Fd creates
 #TODO allow for SQL files to be passed.
+#TODO add test for psql access
 
 #Functions
 ## Usage
@@ -33,27 +34,101 @@ usage() {
   echo "  of this folder will be tested."
   exit 1
 }
+
+## 7zip Error Checking
+7zipErrorCheck () {
+	case "$1" in
+		#Exit without Error
+		0)
+			echo "7zip : Zip Successful"
+		;;
+		#Exit with Error
+		1)
+			echo "ERROR : 7zip : Non Fatal Error - Not all files where accessable."
+		;;
+		#Exit with Fatel Error
+		2)
+			echo "ERROR : 7zip : Fatal error"
+		;;
+		#Exit with Syntax Error
+		7)
+			echo "ERROR : 7zip : Syntax Error"
+		;;
+		#Exit with Memory Error
+		8)
+			echo "ERROR : 7zip : Not Enough Memory For Operation"
+		;;
+		#Exit with User Intervention
+		255)
+			echo "ERROR : 7zip : User stopped the process"
+		;;
+	esac
+}
+
 ##Test file
 backupTest () {
   #Test if there is a Parameter and if its a file.
   if [[ -f $1 ]]; then
     #Test what kind of file is being passed
     file_type=$(file -0 $1 | cut -d ' ' -f 2)
-    echo "file type = $file_type"
+    #if file_type is 7-zip
     if [[ $file_type == "7-zip" ]]; then
       #tested true for 7-zip file.
-      echo "True for 7-zip"
-    elif [[ $file_type == "gzip" ]]; then
-      #tested true for gzip file.
-      echo "Ture for gzip"
-    else
-      echo "Error : File type not expected."
-    fi
+      #extract file $1 to $test_dir/$1
+      mkdir $test_dir/$1
+      7z x -p$encrypt_key $1 -o$test_dir/$1
+      7zipErrorCheck $?
 
+      #Getting dump name
+      dump=$(ls $test_dir/$1 | head -n 1)
+
+      #Try and extract the unziped content into test_db.
+      ##Creating test_db
+      createdb -O dhis test_db
+      ##Pushing data into test_db
+      pg_restore --dbname==test_db --format=directory --jobs=5 $dump
+      ##Cleaning up test_db
+      dropdb test_db
+
+      #Cleaning up the test_dir
+      rm -R $test_dir/$1
+    else
+      #ERROR if its not a 7zip file.
+      echo "Error : backupTest : File type not expected - $file_type."
+    fi
   else
-    echo "Error : Invalid Parrter pased to backupTest Function - "
+    echo "Error : backupTest : Invalid Parrter pased to backupTest Function - "
     echo " Parameter = $1"
   fi
+}
+
+#folder Testing
+folderTest () {
+    #This funciton will iterate though a folder looking for backup files and
+    # Test them.
+
+    #Test if its a folder that has been pased.
+    if [[ -d $1 ]]; then
+      dir_cont=$(ls $1)
+      for i in $dir_cont; do
+        #Move though each item in the folder passed and -
+        ##Test if the item is a dir -
+        if [[ -d $i ]]; then
+          ### if its a dir pass it back to this function to go deeper int othe structure
+          folderTest $i
+        ##or a file -
+        elif [[ -f $i ]]; then
+          ### if its a file pass it to backupTest
+          backupTest $i
+        ##other wise give an error.
+        else
+          echo "ERROR : folderTest : $i is of unexpected type."
+        fi
+      done
+    else
+      echo "ERROR : folderTest : $1 is not a folder."
+    fi
+
 }
 
 #Varriables
@@ -130,24 +205,29 @@ mkdir $test_dir
 
 #Testing for file
 if [[ $file_flag == 1 ]]; then
-  #working with that specific files
-  echo "File"
-  echo "File name = $file_name"
+  #working with that specific file
   backupTest $file_name
 
 elif [[ $dir_flag == 1 ]]; then
-  #working with that specific files
-  echo "Folder"
-  echo "Folder name = $dir_name"
+  #working with that specific folder
+  folderTest $dir_name
+
 else
   #working in current direcory
   echo "Current Folder"
   echo "Files :"
-  find . -maxdepth 1 -type f
+  current_files=$(find . -maxdepth 1 -type f)
+  for i in $current_files; do
+    #Move though each item in the folder passed and -
+    if [[ -f $i ]]; then
+      ### if its a file pass it to backupTest
+      backupTest $i
+    ##other wise give an error.
+    else
+      echo "ERROR : $i is of unexpected type."
+    fi
+  done
 fi
-#TODO - Unzip backup file and all contents into the /tmp folder
-#TODO - Create temp database, upload the backup data into it.
-#TODO - Cleanup
 
 ## Destroy folder structure from base folder
 rm -R $test_dir
