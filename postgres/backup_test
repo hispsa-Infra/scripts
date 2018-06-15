@@ -86,7 +86,7 @@ backupTest () {
       ##Creating test_db
       createdb -O dhis test_db
       ##Pushing data into test_db
-      echo /usr/bin/pg_restore --dbname=test_db --format=directory --jobs=5 $test_dir/$1/$dump
+      /usr/bin/pg_restore --dbname=test_db --format=directory --jobs=5 $test_dir/$1/$dump
       ##Cleaning up test_db
       dropdb test_db
 
@@ -94,7 +94,7 @@ backupTest () {
       rm -R $test_dir/$1
 
       #All Good message
-      echo "Testing for back $1 completed"
+      echo "Testing for backup $1 completed"
     else
       #ERROR if its not a 7zip file.
       echo "Error : backupTest : File type not expected - $file_type."
