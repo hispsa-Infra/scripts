@@ -24,7 +24,11 @@ inst=fail
 user=admin
 password=district
 host=$(hostname)
-
+#Timestamp
+timeinfo=`date '+%Y-%m-%d %H:%M:%S'`
+dateinfo=`date '+%Y-%m-%d'`
+#Log file.
+log="/tmp/analytics-$dateinfo.log"
 
 #While loop to populate varrible
 while getopts ":h:u:p:" opt;
@@ -56,20 +60,28 @@ if [[ $inst = fail ]]; then
   exit 1
 fi
 
+#Create log file if it does not exist.
+if [[ ! -e $log ]]; then
+  touch $log
+fi
+
 # Run analytics for the specified instance.
 output=$(curl -s -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
 
 #Num equals the number of times "OK" occurs in the output.
 num=$(echo $output | grep -c '"status":"OK","message":"Initiated analytics')
-
+{
 #Produce output.
+echo "********************************begin********************************"
+echo -e "$timeinfo > ** Running Analytics for $inst **\n"
 if [ $num -gt 0 ]
 then
 	#If num is greater than 1, then the it is assumed to be successful.
-	echo "SUCCESS: Analytics for $inst ran successfully."
+	echo -e "SUCCESS: Analytics for $inst ran successfully.\n"
 else
 	#Anything less than 1 is assumed to be unsuccsessful.
-	echo -e "ERROR: Analytics for $inst failed.\n\n$output"
-
+	echo -e "ERROR: Analytics for $inst failed."
+  echo -e "$output"
 fi
-
+echo -e "*********************************end*********************************\n"
+} 2>&1 | tee -a $log
