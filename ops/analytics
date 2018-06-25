@@ -65,18 +65,21 @@ if [[ ! -e $log ]]; then
   touch $log
 fi
 
+{
+#Produce output.
+echo "********************************begin********************************"
+echo -e "$timeinfo > ** Running Analytics for $inst **\n"
+
 # Run analytics for the specified instance.
 output=$(curl -s -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
 
 #Num equals the number of times "OK" occurs in the output.
 num=$(echo $output | grep -c '"status":"OK","message":"Initiated analytics')
-{
-#Produce output.
-echo "********************************begin********************************"
-echo -e "$timeinfo > ** Running Analytics for $inst **\n"
+
+#Check it num is greater than 0
 if [ $num -gt 0 ]
 then
-	#If num is greater than 1, then the it is assumed to be successful.
+	#If num is greater than 0, then the it is assumed to be successful.
 	echo -e "SUCCESS: Analytics for $inst ran successfully.\n"
 else
 	#Anything less than 1 is assumed to be unsuccsessful.
