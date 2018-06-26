@@ -82,13 +82,16 @@ backupTest () {
       #Getting dump name
       dump=$(ls $test_dir/$1 | head -n 1)
 
+      #Crafting DB name being tested
+      database=$(echo "$(whoami)_$(hostname)")
       #Try and extract the unziped content into test_db.
-      ##Creating test_db
-      createdb -O dhis test_db
-      ##Pushing data into test_db
-      /usr/bin/pg_restore --dbname=test_db --format=directory --jobs=5 $test_dir/$1/$dump
-      ##Cleaning up test_db
-      dropdb test_db
+      #Create Temp db
+      createdb $conn_str --owner=$db_user $database
+      #Restore DB
+      pg_restore $conn_str --dbname=$database --no-owner --format=directory --jobs=5 $test_dir/$1/$dump
+      #Cleanup
+      ## database
+      dropdb $conn_str $database
 
       #Cleaning up the test_dir
       rm -R $test_dir/$1
@@ -141,6 +144,17 @@ dir_flag=0
 dir_name=''
 file_flag=0
 file_name=''
+
+## For db varribles add * for all options.
+## Build conn string for pgadd
+db_host="10.0.1.27"
+db_port="5432"
+db_name="*"
+db_user="tester"
+db_pw="pUNyI56aPuu9W8NFhdBc"
+
+##psql connection string
+conn_str="--host=$db_host --port=$db_port --username=$db_user -w"
 
 ## System Variables
 ### backup config file
@@ -198,6 +212,10 @@ fi
 #Read the backup.conf file
 source ~/backup.conf
 
+#Create and set Parameters for .pgpass
+echo "$db_host:$db_port:$db_name:$db_user:$db_pw" >> ~/.pgpass
+chmod 0600 ~/.pgpass
+
 #build the dir structure for working in. then destroy it.
 ##Varriables
 ### test_dir will be a hidden file in them with a data stamp
@@ -231,6 +249,10 @@ else
     fi
   done
 fi
+
+#Cleanup
+## pgpass
+rm ~/.pgpass
 
 ## Destroy folder structure from base folder
 rm -R $test_dir
