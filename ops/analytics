@@ -73,6 +73,11 @@ echo -e "$timeinfo > ** Running Analytics for $inst **\n"
 # Run analytics for the specified instance.
 output=$(curl -s -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
 
+#If output is empty, then execute curl in verbose mode.
+if  [[ -z "$output" ]]; then
+  output=$(curl -v -i -s -u $user:$password -X POST https://$inst/api/resourceTables/analytics)
+fi
+
 #Num equals the number of times "OK" occurs in the output.
 num=$(echo $output | grep -c '"status":"OK","message":"Initiated analytics')
 
