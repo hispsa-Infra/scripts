@@ -5,102 +5,57 @@
 #|  _  | | |  `--. \  __/   `--. \  _  |
 #| | | |_| |_/\__/ / |     /\__/ / | | |
 #\_| |_/\___/\____/\_|     \____/\_| |_/
-#Creating Users with Key's injected
+#Creating a specifed User with Key downloaded and injected
 #Author	: Renier Rousseau
-#Created Date 	: 30 September 2017
-usage() {
-  echo "Usage: $PROG [options]"
-  echo " -h     Print this message"
-  echo " -u     User at remote Host for SSH Key (Default - current User i.e. $USER)"
-  echo " -r     Remote Host for SSH Key (Default - localhost)"
-  echo " -d     Directory for SSH keys (Default - current Directory i.e. $PWD)"
-  echo " -p     Port (Defualt is 22)"
-}
+#Created Date 	: 05 October 2018
 
-ssh_user=$(echo $USER)
-ssh_host=localhost
-ssh_directory=$(echo $PWD)
-ssh_port=22
+#Error check to ensure that the command has an argument.
+if [ $# -ne 1 ] ; then
+  #if there are not Parameters
+  echo "Enter the name of the user you are trying to create."
 
-while getopts ":h:u:r:d:p:" opt;
-do
-  case $opt in
-    u)
-      ssh_user=$OPTARG;
-      ;;
-    r)
-      ssh_host=$OPTARG;
-    ;;
-    d)
-      ssh_directory=$OPTARG;
-    ;;
-    p)
-      ssh_port=$OPTARG;
-    ;;
-    h)
-      usage;
-      exit;
-      ;;
-    /?)
-      usage >&2
-      exit 1;
-      ;;
-    :)
-      usage >&2
-      exit 1
-  esac
-done
+else
+  #Move though all the users to ensure that the one requested exsists.
+  #flag for error if user does exist
+  flag_user_exsists=0
 
-shift $(( $OPTIND-1 ))
+  users_ls=`ls /home/`
 
-#Updating the Skel file to edit the bashrc of the User we are about to add
-#Adding a network audit to bashrc
-sudo sh -c "echo 'echo --- Network ---' >> /etc/skel/.bashrc "
-sudo sh -c "echo 'netstat -ntl' >> /etc/skel/.bashrc "
-#Adding a space check to bashrc
-sudo sh -c "echo 'echo --- Harddrive ---' >> /etc/skel/.bashrc "
-sudo sh -c "echo 'df -h /' >> /etc/skel/.bashrc "
-#Adding a Memory usage check to bashrc
-sudo sh -c "echo 'echo --- Memory ---' >> /etc/skel/.bashrc "
-sudo sh -c "echo 'free -h' >> /etc/skel/.bashrc "
-#check for the passwd.txt file one startup and propt the content and a passwd update
-sudo sh -c "echo '[ -e ~/passwd.txt ] && cat passwd.txt && passwd && rm -f passwd.txt ' >> /etc/skel/.bashrc "
-#Change to the right home directory
-sudo sh -c "echo 'cd' >> /etc/skel/.bashrc "
+  for u in $users_ls; do
+
+    if [[ $1 = $u ]]; then
+      #User found update flag_user_exsists
+      flag_user_exsists=1
+
+      #echo the bad news
+      echo "User found! - Canceling User Creation."
+
+      #exit
+      exit
+    fi
+  done
+  #flag_db_exsists is 0 - so user does not currently exsist
+  if [[ $flag_user_exsists = 0 ]]; then
+    #Create user
+    sudo useradd -m -G sudo -s /bin/bash $1
+
+    #Generating and assinging the password for the user.
+    echo $(</dev/urandom tr -dc A-Za-z0-9 | head -c 20) > ~/passwd.txt
+    sudo mv ~/passwd.txt /home/$1/passwd.txt
+    echo "$1:$(cat /home/$1/passwd.txt)" | sudo chpasswd $1
 
 
-#The users will be added according to the folders in the Directory specified
-if [[ $ssh_host = "localhost" ]]; then
-  infra_users=($(ls $ssh_directory))
-elif [[ $ssh_host != "localhost" ]]; then
-  infra_users=($(ssh -p $ssh_port $ssh_user@$ssh_host "ls $ssh_directory"))
-fi
+    #get the key from a remote host and add it too the users authorized_keys file
+    #get sshpublic Key.
+    wget https://raw.githubusercontent.com/hispsa-Infra/scripts/master/setup/sshkeys/$1/authorized_keys
+    sudo mkdir /home/$1/.ssh
+    mv authorized_keys /tmp/.authorized_keys
+    sudo mv /tmp/.authorized_keys /home/$1/.ssh/authorized_keys
 
-#Move thoguht the arry of users and creates them and copies the keys.
-for str_infra_user in "${infra_users[@]}"; do
-  #for each user listed in the infra_users array
-  #TODO fist test if those users have been created
-  #Create user
-  sudo useradd -m -G sudo -s /bin/bash $str_infra_user
-  #Create a random password of 20 char and put it in a txt file in their home
-  # folder - this is so they can change it once they have logged in with thier
-  # SSH Key
-  echo $(</dev/urandom tr -dc A-Za-z0-9 | head -c 20) > ~/passwd.txt
-  sudo mv ~/passwd.txt /home/$str_infra_user/passwd.txt
-  echo "$str_infra_user:$(cat /home/$str_infra_user/passwd.txt)" | sudo chpasswd $str_infra_user
+    #Changing the owner ship
+    sudo chown -R $1:$1 /home/$1/.ssh/*
+    sudo chown -R $1:$1 /home/$1/.ssh/
 
-  #get the key from a remote host and add it too the users authorized_keys file
-  sudo mkdir /home/$str_infra_user/.ssh
-  if [[ $ssh_host = "localhost" ]]; then
-    cp $ssh_directory/$str_infra_user/authorized_keys /tmp/.authorized_keys
-  elif [[ $ssh_host != "localhost" ]]; then
-  scp -P $ssh_port $ssh_user@$ssh_host:$ssh_directory/$str_infra_user/authorized_keys /tmp/.authorized_keys
+    echo "User - $1 - has been added"
   fi
-  sudo mv /tmp/.authorized_keys /home/$str_infra_user/.ssh/authorized_keys
-
-  #Changing the owner ship
-  sudo chown -R $str_infra_user:$str_infra_user /home/$str_infra_user/.ssh/*
-  sudo chown -R $str_infra_user:$str_infra_user /home/$str_infra_user/.ssh/
-
-  echo "User - $str_infra_user - has been added"
-done
+fi
